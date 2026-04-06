@@ -1,0 +1,195 @@
+
+CONTEXT:
+В проекте уже есть:
+- customer mobile app
+- courier mode
+- admin panel
+- realtime dispatch
+- live tracking
+- real Google Places / Maps locator
+- pricing engine
+- promo engine
+- refunds / coupons / invoices / payouts foundation
+- Stripe execution layer foundation
+- PDF invoices
+- email abstraction
+- system status page
+- BETA_QA guide
+
+Core flows уже собраны. Теперь не нужно строить новые большие функции. Нужно довести проект до состояния:
+LIVE SERVICES WIRING + DEVICE BETA TESTING READINESS
+
+Главная цель:
+1. Подключить реальные сервисы через env/config.
+2. Подготовить приложение к реальному тесту на телефонах.
+3. Проверить реальную работу critical integrations.
+4. Подготовить безопасный путь к TestFlight / closed beta.
+
+TASK OVERVIEW:
+Реализуй следующий блок:
+
+PART 1 — LIVE SERVICE CONFIGURATION
+1. Приведи все внешние интеграции к production-style config layer.
+2. Чётко раздели:
+   - mock mode
+   - test mode
+   - live-ready mode
+3. Подготовь и проверь wiring для:
+   - Google Maps / Places
+   - Stripe
+   - Stripe webhooks
+   - SendGrid
+   - storage provider
+   - push notifications
+   - Google Sign-In / Firebase auth where relevant
+4. Сделай так, чтобы отсутствие ключей не ломало приложение, а давало понятный degraded mode.
+5. Добавь понятную диагностику readiness по каждому сервису.
+
+PART 2 — GOOGLE / MAPS DEVICE READINESS
+1. Проверить и довести Google Maps / Places integration до device-ready состояния.
+2. Убедиться, что:
+   - Places Autocomplete работает корректно
+   - place details возвращают реальные lat/lng
+   - reverse geocoding работает
+   - map picker работает на реальном устройстве
+3. Проверить platform-specific config:
+   - iOS
+   - Android
+4. Если нужны дополнительные native config параметры — добавить их.
+5. Убедиться, что create-order flow на реальном устройстве использует только валидные координаты.
+
+PART 3 — AUTH LIVE READINESS
+1. Довести auth integrations до live-ready состояния.
+2. Проверить/подключить:
+   - email auth
+   - Google sign-in
+   - phone auth foundation if relevant
+3. Чётко разделить:
+   - что реально работает уже сейчас
+   - что требует Firebase / Google credentials
+4. Подготовить приложение к реальному входу на устройстве без поломки customer/courier routing.
+
+PART 4 — STRIPE TEST/LIVE READINESS
+1. Подключить real Stripe test/live wiring через env.
+2. Убедиться, что:
+   - PaymentIntent create
+   - capture
+   - cancel
+   - refund
+   - webhook verification
+   работают корректно через test/live configuration layer.
+3. Не допускать опасного смешивания mock/live.
+4. Подготовить безопасные guards и clear logging.
+5. Проверить readiness для Stripe Connect foundation.
+
+PART 5 — EMAIL / STORAGE LIVE READINESS
+1. Подключить SendGrid через env/config.
+2. Подключить storage provider через env/config.
+3. Убедиться, что:
+   - invoice PDFs можно реально сохранить
+   - invoice emails можно реально отправить
+   - fallback режим безопасен
+4. Логировать успешные/неуспешные попытки.
+
+PART 6 — PUSH / NOTIFICATIONS DEVICE TEST READINESS
+1. Довести push notifications до реального device-ready состояния.
+2. Проверить:
+   - permission flow
+   - token registration
+   - courier push flow
+   - customer push fallback flow where applicable
+3. Не ломать существующий realtime.
+4. Push должен оставаться fallback когда приложение свернуто/закрыто.
+5. Подготовить clear testing flow for physical devices.
+
+PART 7 — LOCATION / COURIER DEVICE TEST READINESS
+1. Проверить реальный location flow у courier mode.
+2. Убедиться, что:
+   - location permissions корректны
+   - location tracking стартует только когда нужно
+   - online + active order logic корректна
+   - location updates реально уходят на backend
+   - customer/admin получают location updates
+3. Чётко обозначить, что можно проверить только на физическом устройстве.
+4. Не делать новых map features — только довести текущие.
+
+PART 8 — TESTFLIGHT / BUILD PREP FOUNDATION
+1. Подготовить проект к следующему шагу — EAS / TestFlight.
+2. Проверить:
+   - app config
+   - splash
+   - icons
+   - permissions texts
+   - bundle/package readiness
+   - env separation
+3. Не делать ещё сам релиз/публикацию, но подготовить build-ready основу.
+4. Если нужны исправления для native build readiness — внести их.
+
+PART 9 — DEVICE BETA TEST CHECKLIST
+1. Создай/обнови чёткий checklist для реального теста на устройствах.
+2. Отдельно для:
+   - customer
+   - courier
+   - admin/ops
+3. Включи туда:
+   - login
+   - address selection
+   - create order
+   - tracking
+   - courier accept
+   - delivery complete
+   - push
+   - location
+   - invoice
+   - refund/coupon outcome where relevant
+4. Не общими словами, а как реальный operational checklist.
+
+PART 10 — SYSTEM STATUS / READINESS OUTPUT
+1. Обнови system/integration readiness visibility.
+2. Дай чёткий итог:
+   - что реально работает уже сейчас
+   - что готово в коде, но требует credentials
+   - что требует physical device
+   - что ещё остаётся до closed beta
+   - что остаётся до TestFlight
+3. Не скрывай проблемы. Нужна честная production-readiness картина.
+
+IMPORTANT:
+1. Не строить новые большие продуктовые функции.
+2. Не менять pricing/business logic без необходимости.
+3. Не ломать customer/courier/admin flows.
+4. Не уходить в маркетинговые функции.
+5. Не делать публичный App Store release на этом этапе.
+6. Фокус только на live integrations и device beta readiness.
+
+WHAT TO VERIFY:
+1. Customer flow live-ready
+2. Courier flow live-ready
+3. Admin ops live-ready
+4. Finance integrations live/test-ready
+5. Maps/location live-ready
+6. Push/device live-ready
+7. Build/TestFlight foundation ready
+
+DELIVERABLES:
+1. Updated live config/env system
+2. Connected integrations where possible
+3. Device beta testing checklist
+4. Updated readiness/system status
+5. Summary:
+   - какие env variables нужны
+   - какие сервисы реально подключены
+   - что работает только в mock
+   - что требует физическое устройство
+   - что готово для TestFlight
+   - какие blockers ещё остались
+
+DEFINITION OF DONE:
+1. Проект готов к подключению реальных сервисов без хаоса.
+2. Есть понятный путь тестирования на физических устройствах.
+3. Все ключевые интеграции приведены к live/test-ready состоянию.
+4. Есть честная картина remaining blockers.
+5. Проект готов к следующему шагу: closed beta on devices / TestFlight prep.
+
+START:
+Сначала проверь и доведи config/env wiring для всех внешних сервисов, затем maps/auth/stripe/email/push/location readiness, затем подготовь device beta checklist и финальный readiness summary.

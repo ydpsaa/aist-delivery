@@ -1,0 +1,87 @@
+Отлично. Теперь переходим к следующей подзадаче: реализовать live dispatch и real-time обновления для courier flow, чтобы убрать зависимость от polling и сделать обновления мгновенными.
+
+Что нужно сделать сейчас:
+1. Убрать основную зависимость courier mode от 10-second polling.
+2. Реализовать real-time канал обновлений между backend и courier app.
+3. Использовать стабильное MVP-решение:
+   - SSE или WebSocket
+4. Courier app должен получать обновления мгновенно, без ручного refresh.
+5. Не ломать текущий push notification flow.
+6. Push notifications оставить как fallback, когда приложение свернуто или закрыто.
+
+Что должно работать после этого этапа:
+1. Если courier online и открыт courier mode, новые available orders появляются instantly.
+2. Если order assigned / updated / cancelled / delivered, courier UI обновляется instantly.
+3. Если courier меняет свой статус online/offline, UI и backend остаются синхронизированными.
+4. Если active order меняет состояние, current order screen обновляется без polling.
+5. Если courier открывает приложение и real-time connection доступно, polling не должен быть основным механизмом.
+6. Если real-time connection падает, можно временно fallback на polling или reconnect strategy.
+
+Backend requirements:
+1. Добавить real-time event layer для courier-related events.
+2. Выбрать и реализовать один подход:
+   - SSE
+   - или WebSocket
+3. Backend должен уметь отправлять courier events:
+   - new_order_available
+   - order_assigned
+   - order_updated
+   - order_cancelled
+   - order_delivered
+   - courier_status_updated если это нужно для синхронизации
+4. Event publishing должен происходить из backend order lifecycle, а не быть отдельной хаотичной логикой.
+5. Если order создаётся через customer order endpoint — online couriers должны instantly получать event.
+6. Если order отменяется через admin endpoint — назначенный courier должен instantly получать event.
+7. Если courier принимает заказ — его own current order должен instantly обновляться.
+8. Не ломать текущую state machine order statuses.
+
+App requirements:
+1. Добавить real-time client layer для courier mode.
+2. CourierContext должен подписываться на real-time events после логина courier.
+3. При получении event:
+   - обновлять available orders
+   - обновлять current order
+   - обновлять history если нужно
+4. Не перерисовывать всё приложение хаотично.
+5. Сохрани clean architecture:
+   - отдельный service для live connection
+   - отдельный event handler layer
+6. Если соединение теряется:
+   - показать мягкий reconnect state или silently reconnect
+   - не ломать UI
+7. Если reconnect не удался — можно временно fallback на polling как backup.
+
+Notification logic:
+1. Push notifications не убирать.
+2. Если приложение активно и real-time connection работает, приоритет у live updates.
+3. Если приложение в фоне или закрыто — push остаётся основным способом.
+4. Не дублировать UX хаотично.
+
+Constraints:
+1. Не переделывать customer app на этом этапе.
+2. Не делать пока full customer real-time tracking.
+3. Не переписывать admin panel.
+4. Не добавлять лишние features.
+5. Не ломать courier UI.
+6. Не убирать текущий backend auth/role logic.
+7. Сделать стабильный MVP real-time слой для courier flow.
+
+Architecture requirements:
+1. Separate real-time service on backend.
+2. Separate real-time client service in mobile app.
+3. CourierContext должен работать через централизованную live event integration.
+4. Подготовить архитектуру так, чтобы следующим этапом можно было:
+   - добавить customer live tracking
+   - добавить dispatcher live dashboard
+   - добавить richer notification/event routing
+
+После завершения покажи:
+1. Какой подход выбран:
+   - SSE
+   - WebSocket
+2. Какие backend файлы и endpoints/streams были добавлены.
+3. Какие app files были изменены.
+4. Какие courier events уже работают real-time.
+5. Как теперь работает reconnect / fallback.
+6. Что было убрано или оставлено от polling.
+7. Что следующим шагом нужно сделать для customer live tracking и dispatcher live dashboard.

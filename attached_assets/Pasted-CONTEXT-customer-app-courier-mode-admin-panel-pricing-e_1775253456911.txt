@@ -1,0 +1,194 @@
+CONTEXT:
+В проекте уже есть:
+- customer app
+- courier mode
+- admin panel
+- pricing engine
+- realtime
+- tracking
+- finops foundation
+- brand update
+
+Сейчас нужно сфокусироваться на user-facing качестве мобильного приложения перед реальным запуском на тестовых пользователях.
+
+Главная цель:
+Сделать mobile app реально usable для первых пользователей.
+
+PRIORITY BLOCKS:
+1. Profile completion
+2. Real Google Maps / Places locator
+3. Order categories cleanup and finalization
+4. New Order flow polish
+5. Release-grade cleanup of fake/demo elements
+
+BUSINESS LOGIC SOURCE OF TRUTH:
+Использовать текущую продуктовую логику AIST:
+- Flash Express
+- Window Delivery (Cargo window logic)
+- Buy For Me
+
+Не выводить сейчас как отдельные customer-facing главные категории:
+- Large Delivery
+- отдельный Cargo как лишнюю самостоятельную карточку
+- future XL/van flows
+
+В customer app на этапе beta должны быть 3 главные категории:
+1. Flash Express
+2. Window Delivery
+3. Buy For Me
+
+TASK OVERVIEW:
+Реализуй следующий этап:
+PROFILE COMPLETION + REAL MAPS LOCATOR + ORDER FLOW CLEANUP + BETA-READY CUSTOMER APP POLISH
+
+PART 1 — PROFILE COMPLETION
+Нужно полностью довести профиль до рабочего состояния.
+
+Что сделать:
+1. Убрать фейковые / демо-данные из Profile screen:
+   - fake user name
+   - fake stats
+   - fake Business Plan block если подписки реально ещё нет
+   - fake payment method если реальный payment method flow ещё не подключён
+2. Показать реальные данные пользователя:
+   - name
+   - email
+   - phone
+   - role
+   - language
+   - theme
+3. Оставить только реально рабочие секции.
+4. Сделать реальный editable profile flow для допустимых полей.
+5. Добавить реальный logout.
+6. Saved Addresses должны работать от реальных данных, а не от шаблона.
+7. Dark mode toggle должен реально работать или быть корректно привязан к theme system.
+8. Language selection должен быть реальным и рабочим.
+9. Если subscription/business plan ещё не реализован в продукте — скрыть этот блок полностью, а не показывать fake UI.
+10. Если payment methods ещё не готовы как реальный user-facing flow — скрыть или пометить clearly as coming later, но не оставлять фейковую карту.
+
+PART 2 — REAL GOOGLE MAPS / PLACES LOCATOR
+Нужно заменить текущий условный locator на реальный боевой address picker.
+
+Что сделать:
+1. Подключить Google Places Autocomplete для ввода адреса.
+2. При вводе пользователь должен видеть реальные address suggestions.
+3. При выборе адреса сохранять:
+   - formatted address
+   - lat
+   - lng
+4. Добавить возможность выбрать точку вручную на карте.
+5. При ручном выборе на карте делать reverse geocoding.
+6. Поддержать оба поля:
+   - pickup
+   - delivery
+7. Добавить optional details:
+   - note
+   - apartment/floor
+   - entrance
+   - buzzer
+8. Использовать только реальные geocoded coordinates в create order flow.
+9. Нельзя создавать заказ с “пустым текстом адреса” без валидных координат.
+10. Сохранить UX быстрым и чистым.
+
+PART 3 — NEW ORDER FLOW CLEANUP
+Нужно довести экран заказа до реального beta-ready состояния.
+
+Что сделать:
+1. Убрать лишние и устаревшие категории.
+2. Оставить только:
+   - Flash Express
+   - Window Delivery
+   - Buy For Me
+3. Убрать отдельную карточку Cargo из customer-facing main order list.
+4. Убрать отдельную Large Delivery карточку, если она сейчас где-то торчит.
+5. Все цены и price previews должны браться из backend pricing engine.
+6. Убрать временные/жёстко зашитые старые цены.
+7. Показывать корректный service description:
+   - Flash Express = ASAP direct delivery
+   - Window Delivery = choose a time slot
+   - Buy For Me = courier shops for you
+8. Для Window Delivery показать реальные временные окна.
+9. Для Buy For Me показать понятную pricing summary:
+   - service fee
+   - km
+   - wait logic short summary
+10. Continue button должен работать только если данные валидны.
+
+PART 4 — ORDER CATEGORY FINALIZATION
+Нужно привести product category layer к чистому beta виду.
+
+Сделать:
+1. Проверить все customer-facing места, где выводятся категории.
+2. Везде синхронизировать названия и тексты:
+   - Flash Express
+   - Window Delivery
+   - Buy For Me
+3. Удалить customer-facing confusion между Cargo и Window Delivery.
+4. Если backend/service type всё ещё использует cargo internals — не ломать backend, а правильно маппить customer-facing label = Window Delivery.
+5. Подготовить архитектуру так, чтобы потом можно было вернуть advanced cargo/XL, но сейчас UI должен быть чистым.
+
+PART 5 — RELEASE-GRADE CUSTOMER UX POLISH
+Сделать продукт пригодным к реальному тесту пользователями.
+
+Что сделать:
+1. Убрать fake/demo UI из customer app.
+2. Проверить:
+   - empty states
+   - loading states
+   - validation errors
+   - address errors
+   - order creation errors
+3. Сделать UX clean and trustable.
+4. Если какая-то секция ещё не готова — лучше скрыть её, чем показывать fake content.
+5. Провести финальный polish:
+   - spacing
+   - hierarchy
+   - readability
+   - CTA clarity
+
+PART 6 — INTEGRATION / VALIDATION
+Проверить и исправить:
+1. Profile screen не должен падать.
+2. Saved addresses должны реально загружаться.
+3. New order должен работать с реальными адресами.
+4. Price preview должен корректно обновляться после выбора сервиса и адресов.
+5. Tracking и orders history не должны ломаться после нового order flow.
+6. Ничего из auth / routing / pricing / realtime не сломать.
+
+PART 7 — WHAT TO HIDE IF NOT READY
+Если что-то ещё не готово как реальный пользовательский функционал — не оставляй fake version на экране.
+
+Скрыть или временно убрать:
+- fake business plan / subscription if not implemented
+- fake payment methods if not implemented
+- fake stats in profile
+- лишние категории, не относящиеся к beta scope
+- любую демо-информацию, которая ломает доверие пользователя
+
+PART 8 — FINAL OUTPUT
+После завершения покажи:
+1. Какие экраны были изменены.
+2. Какие fake/demo блоки были убраны.
+3. Как теперь работает profile.
+4. Как теперь работает real address picker.
+5. Какие категории остались в app.
+6. Какие backend integrations были использованы для locator/order creation.
+7. Что ещё остаётся перед реальным тестом пользователей на устройстве.
+
+IMPORTANT:
+1. Не строить новые большие backend системы.
+2. Не добавлять новые категории.
+3. Не ломать pricing engine.
+4. Не ломать realtime.
+5. Не ломать courier/admin flows.
+6. Цель — сделать customer app clean, real, trustworthy и beta-ready.
+
+DEFINITION OF DONE:
+1. Profile screen рабочий и без fake UI.
+2. Address picker реальный, с Google suggestions и картой.
+3. В заказе остались только правильные 3 категории.
+4. New Order flow выглядит и работает как реальный продукт.
+5. Приложение можно показать реальным тестовым пользователям без ощущения “сырого демо”.
+
+START:
+Сначала почини и доведи Profile screen, затем реализуй real Google Maps / Places address picker, затем очисти и синхронизируй New Order categories, затем сделай финальный beta-ready polish customer app.

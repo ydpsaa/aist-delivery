@@ -1,0 +1,59 @@
+Сейчас не переходим к новым функциям. Сначала нужно полностью починить текущую admin panel, потому что она не загружает dashboard и не подключается к backend.
+
+Текущая проблема:
+Admin panel открывается, но dashboard показывает ошибку:
+"Failed to load dashboard"
+"Could not connect to the operations server."
+
+Нужно сделать именно debug и fix, а не строить новые экраны.
+
+Что нужно сделать сейчас:
+1. Найти точную причину, почему admin frontend не может подключиться к backend / operations server.
+2. Проверить:
+   - API base URL
+   - proxy / rewrite
+   - environment variables
+   - admin panel fetch client
+   - CORS
+   - route paths
+   - backend server availability
+   - auth token injection
+3. Исправить connection между admin panel и backend так, чтобы dashboard реально загружал данные.
+4. Проверить не только dashboard, но и все admin страницы:
+   - /admin/dashboard
+   - /admin/users
+   - /admin/couriers
+   - /admin/orders
+5. Если проблема в том, что admin panel и API server живут в одном Replit-проекте, правильно настроить routing / proxy / internal base URL.
+6. Если нужен отдельный internal API base path для admin panel — настроить его корректно.
+7. Если проблема в generated API client — исправить client configuration.
+8. Если проблема в auth guard или JWT — исправить это тоже.
+
+Что нужно проверить и показать:
+1. Какой URL сейчас использует admin panel для запросов.
+2. Какой URL реально должен использоваться внутри этого Replit-проекта.
+3. Где именно ломается запрос:
+   - network
+   - auth
+   - CORS
+   - wrong path
+   - proxy
+   - server unavailable
+4. Какие файлы нужно изменить для исправления.
+5. После исправления показать, что dashboard реально грузится, а не только login screen.
+
+Технические требования:
+1. Не строить новые фичи.
+2. Не переписывать весь admin panel.
+3. Не ломать mobile app.
+4. Починить только connection и data loading.
+5. Сделать production-style solution, а не временный костыль.
+6. Если нужен единый shared API config для mobile app и admin panel — привести его в порядок.
+7. Если нужно, добавить health check endpoint или debug log для admin panel API connection.
+
+После завершения покажи:
+1. В чем была точная причина ошибки.
+2. Какие файлы были изменены.
+3. Как теперь admin panel подключается к backend.
+4. Скрин или подтверждение, что dashboard, users, couriers, orders реально загружаются.
+5. Что ещё может потребовать финальной настройки перед использованием.

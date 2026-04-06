@@ -1,0 +1,294 @@
+CONTEXT:
+В проект уже загружены внутренние документы AIST:
+1. Технический конспект с сервисами, ценообразованием, логикой Flash / Cargo / Buy For Me, SLA, dispatch, data models и API.
+2. FinOps v2 с юридической моделью OSVČ, двумя типами курьеров, Stripe Connect логикой, refund engine, coupon logic, faktura flow, payout foundation, ETA и background jobs.
+
+Эти документы нужно считать основой бизнес-логики. Не придумывай альтернативные правила, если они уже описаны в документах.
+
+CURRENT PRIORITY:
+Нужно реализовать следующий блок:
+REFUND ENGINE + COUPON ENGINE + INVOICE GENERATION FOUNDATION + PAYOUT FOUNDATION
+
+Важно:
+1. Не ломать уже работающий pricing flow.
+2. Не ломать auth, roles, realtime, dispatch.
+3. Не строить полный бухгалтерский ERP.
+4. Сделать production-ready foundation для beta-фазы AIST.
+
+TASK OVERVIEW:
+Реализуй 4 основных блока:
+1. Refund Engine
+2. Coupon Engine
+3. Invoice Generation Foundation
+4. Courier Payout Foundation
+
+PART 1 — REFUND ENGINE
+Реализуй backend refund rule engine на основе документов.
+
+Нужно поддержать как минимум следующие сценарии:
+1. Flash delay 15–60 min
+   - partial refund 49 CZK
+2. Flash delay > 60 min
+   - full refund стоимости доставки
+3. Cargo window missed
+   - не денежный refund, а coupon на следующий заказ
+4. Customer cancel before departure
+   - release hold / no charge
+5. Customer cancel after departure
+   - partial charge / partial refund foundation
+6. Buy For Me client cancel during video step
+   - Service Fee удерживается
+   - deposit hold release
+7. Foundation для damage compensation workflow
+   - до 5 000 CZK как claim/refund case
+   - не строй весь claims product, только foundation
+
+Что нужно сделать:
+1. Добавить refund rule evaluation layer.
+2. Добавить refund decision model:
+   - refund type
+   - amount
+   - reason
+   - orderId
+   - auto/manual
+   - status
+3. Добавить refund records table.
+4. Подготовить backend service:
+   - evaluateRefundForOrder(order)
+   - applyRefundDecision(...)
+5. Если Stripe уже не fully wired — не делай full live financial execution везде, но foundation должна быть готова.
+6. Поддержать partial/full refund data flow и coupon fallback.
+
+PART 2 — COUPON ENGINE
+Реализуй внутреннюю coupon system по документу.
+
+Что нужно:
+1. Таблица coupons:
+   - coupon_id
+   - client_id
+   - amount_czk
+   - order_id
+   - reason
+   - service_type
+   - valid_until
+   - used
+   - used_at
+   - used_on_order
+2. Backend coupon service:
+   - issueCoupon(...)
+   - getAvailableCoupons(clientId)
+   - applyCouponToOrder(...)
+   - expireCoupons job-ready
+3. Coupon issuance rules:
+   - cargo missed window
+   - goodwill/admin/manual
+   - SLA/case logic where applicable
+4. Customer app:
+   - показывать доступные coupons
+   - применять coupon при создании заказа
+   - пересчитывать final total
+5. Admin panel:
+   - list coupons
+   - issue manual coupon
+   - deactivate/expire if needed
+6. Не заменять promo code system, а сделать coupon engine рядом с promo engine.
+
+PART 3 — INVOICE GENERATION FOUNDATION
+Реализуй foundation под faktura/PDF generation на основе FinOps документа.
+
+Что нужно:
+1. Таблица invoices:
+   - invoice_id
+   - order_id
+   - invoice_number
+   - invoice_type
+   - customer_id
+   - amount
+   - currency
+   - issue_date
+   - taxable_date
+   - due_date
+   - pdf_url
+   - email_sent_at
+   - metadata
+2. Invoice numbering:
+   - формат типа AIST-2026-000001
+   - без пропусков
+3. Invoice builder service:
+   - buildInvoiceDataFromOrder(...)
+   - renderInvoiceHtml(...)
+   - generateInvoicePdf(...)
+4. Пока можно использовать HTML template + PDF renderer foundation.
+5. Подготовить storage foundation:
+   - S3/R2 compatible interface
+6. После DELIVERED order должна быть готова foundation для auto-invoice generation.
+7. Учитывать, что AIST в beta-фазе:
+   - OSVČ
+   - neplátce DPH
+   - DPH строки не должны строиться как для VAT payer
+8. Подготовить customer access:
+   - invoice link in order history / profile later-ready
+9. Admin panel:
+   - invoice visibility in order detail
+   - invoice record list basic view
+
+Важно:
+Не обязательно доводить до идеальной PDF-типографии в этой задаче, но foundation должна быть рабочей и логичной.
+
+PART 4 — PAYOUT FOUNDATION
+Реализуй foundation для двух типов курьеров:
+1. Fleet courier
+2. OSVČ courier
+
+Что нужно:
+1. Добавить courier payout model / таблицы:
+   - payout_batch
+   - payout_item
+   - courier_type
+   - gross_amount
+   - platform_fee
+   - stripe_fee
+   - tax_withheld placeholder
+   - final_payout
+   - payout_status
+   - payout_method
+2. Разделить payout logic:
+   - Fleet payout logic
+   - OSVČ payout logic
+3. Для OSVČ:
+   - foundation под weekly faktura / transfer flow
+4. Для Fleet:
+   - foundation под weekly earnings summary
+   - DPP/DPČ-ready payout records
+5. Добавить weekly payout summary service:
+   - calculateCourierWeekSummary(...)
+6. Admin panel:
+   - courier payout overview
+   - simple list/table of payout records
+   - courier weekly breakdown
+7. Не строй пока full payroll/accounting engine.
+8. Но сделай так, чтобы потом можно было без рефакторинга подключить:
+   - Stripe Connect transfers
+   - faktura from courier to AIST
+   - tax/export/reporting
+
+PART 5 — ORDER / FINOPS INTEGRATION
+Свяжи новые блоки с уже существующими order flows:
+1. Order delivered → ready for invoice generation
+2. SLA missed → refund/coupon decision
+3. Admin cancel / customer cancel → refund logic decision
+4. Coupon usage → reflected in order breakdown
+5. Courier completed order → included in payout foundation
+6. Не ломай current state machine
+
+PART 6 — ADMIN PANEL TOOLS
+Добавь в admin panel минимально нужные разделы:
+1. Refunds
+   - list
+   - status
+   - amount
+   - reason
+   - auto/manual
+2. Coupons
+   - list
+   - create manual coupon
+   - client linkage
+   - amount
+   - service restriction
+   - validity
+3. Invoices
+   - list
+   - invoice number
+   - amount
+   - linked order
+   - pdf status
+4. Payouts
+   - weekly summaries
+   - payout records
+   - courier type
+   - status
+
+UI должен быть operations-style, не перегруженный, но usable.
+
+PART 7 — BACKGROUND JOB FOUNDATION
+Подготовь foundation для jobs из документа:
+1. slaRefundChecker
+2. invoiceGenerator
+3. payoutProcessor
+4. couponExpirer
+5. etaRecalculator
+Не обязательно делать full production scheduler orchestration, но:
+- структура jobs
+- service entry points
+- registration points
+- idempotency considerations
+должны быть подготовлены.
+
+PART 8 — API LAYER
+Добавь/обнови нужные endpoints для:
+1. refunds
+2. coupons
+3. invoices
+4. payouts
+5. customer coupon/invoice access
+6. admin operations over refunds/coupons/invoices/payouts
+
+Сделай backend endpoints логичными и consistent с уже существующей архитектурой проекта.
+
+WHAT NOT TO DO:
+1. Не ломать уже работающий pricing system.
+2. Не переделывать customer/courier/admin routing.
+3. Не делать сейчас полный email marketing.
+4. Не делать полный бухучёт.
+5. Не делать полный Stripe production reconciliation engine.
+6. Не строить giant legal compliance suite.
+7. Не ломать mobile UX без причины.
+
+ARCHITECTURE REQUIREMENTS:
+1. Refund engine должен быть отдельно от UI.
+2. Coupon engine отдельно от promo engine, но совместим.
+3. Invoice generation отдельно от order routes.
+4. Payout foundation отдельно от courier UI.
+5. Всё должно быть testable и backend-driven.
+6. Не хардкодить финансовую логику по случайным местам.
+7. Подготовить код так, чтобы следующим этапом можно было подключить:
+   - real Stripe Connect transfer execution
+   - actual invoice PDF delivery
+   - courier faktura flow
+   - payroll/tax export
+   - production finance ops
+
+VALIDATION REQUIREMENTS:
+1. Refund/coupon logic не должна ломать final order totals.
+2. Invoice number generation должно быть последовательным.
+3. Coupon cannot be reused.
+4. Refund records должны сохранять audit trail.
+5. Payout summary должен быть воспроизводимым по данным заказов.
+6. Все critical actions должны быть role-protected.
+
+DELIVERABLES:
+1. Refund engine foundation
+2. Coupon engine foundation
+3. Invoice generation foundation
+4. Payout foundation
+5. Admin sections for these modules
+6. Required schema updates
+7. Required API endpoints
+8. Short summary:
+   - какие таблицы добавлены
+   - какие endpoints добавлены
+   - какие admin sections добавлены
+   - какие flows уже работают
+   - что осталось следующим этапом
+
+DEFINITION OF DONE:
+1. Refund rules backend-driven.
+2. Coupons can be issued and applied.
+3. Invoices have a real foundation with numbering and generation flow.
+4. Payout data model exists and weekly summaries can be built.
+5. Admin can view and manage core FinOps entities.
+6. Core product flows are not broken.
+7. Project is ready for next phase: real Stripe Connect execution + actual payout automation + full invoice delivery.
+
+START:
+Сначала реализуй backend schema + services для refunds/coupons/invoices/payouts, потом подключи admin panel, потом customer integrations where needed, и в конце покажи полный summary по новым FinOps блокам.

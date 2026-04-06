@@ -1,0 +1,104 @@
+Отлично. Теперь переходим к следующей подзадаче: реализовать customer live tracking и real-time обновления статуса заказа для клиента внутри мобильного приложения.
+
+Что нужно сделать сейчас:
+1. Добавить real-time канал для customer app.
+2. Клиент должен получать live updates по своему заказу без ручного refresh.
+3. Использовать тот же общий подход, который уже применён для courier mode:
+   - WebSocket
+4. Не ломать текущий courier flow.
+5. Не убирать push notifications.
+6. Сделать customer live tracking как отдельный, чисто изолированный слой.
+
+Что должно работать после этого этапа:
+1. Когда клиент создаёт заказ, он может открыть tracking screen и видеть live status.
+2. Когда заказ получает курьера, статус обновляется instantly.
+3. Когда курьер:
+   - принимает заказ
+   - приезжает
+   - забирает заказ
+   - доставляет заказ
+   клиент видит это мгновенно на tracking screen.
+4. Если заказ отменён, клиент тоже instantly видит обновление.
+5. Если приложение активно и открыт tracking screen, live updates должны приходить без polling.
+6. Если приложение в фоне или закрыто — push notifications остаются fallback-механизмом.
+
+Backend requirements:
+1. Добавить отдельный customer WebSocket flow.
+2. Реализовать customer event channel:
+   - emitToCustomer(customerId, event)
+3. Добавить customer WebSocket endpoint:
+   - /api/customer/ws
+4. Проверять JWT и роль customer на этом канале.
+5. Backend должен отправлять customer events на каждом ключевом этапе order lifecycle:
+   - order_created
+   - courier_assigned
+   - courier_arrived
+   - picked_up
+   - delivered
+   - cancelled
+6. Все events должны выходить из уже существующей order lifecycle логики, а не быть разбросаны хаотично.
+7. Не ломать текущий courier event bus — расширить архитектуру аккуратно.
+
+App requirements:
+1. Добавить customer real-time client service.
+2. Подключить его только там, где это нужно:
+   - tracking screen
+   - current order state
+3. Если у клиента нет активного заказа — соединение можно не держать постоянно, либо держать только если это архитектурно проще.
+4. При получении events обновлять tracking UI instantly.
+5. Добавить нормальные loading / connecting / reconnect states.
+6. Не перегружать UI.
+7. Не менять без причины уже готовые customer screens, кроме tracking integration.
+
+Tracking UI requirements:
+1. Tracking screen должен показывать live order timeline.
+2. Статусы:
+   - searching
+   - assigned
+   - courier_arrived
+   - picked_up
+   - delivered
+   - cancelled
+3. Добавить понятную progress visualization:
+   - current step
+   - completed steps
+4. Подготовить место для:
+   - courier name
+   - ETA placeholder
+   - delivery details
+5. Если реального map tracking ещё нет — не выдумывать его. Сделать честный real-time status tracking.
+6. Подготовить архитектуру так, чтобы потом можно было добавить real map tracking без переделки core flow.
+
+Notification requirements:
+1. Push notifications для клиента оставить как fallback.
+2. Добавить customer push types, если это уже уместно:
+   - courier_assigned
+   - courier_arrived
+   - delivered
+   - cancelled
+3. Если пока не хочешь делать все customer push notifications, можно сначала сделать только live in-app tracking, но архитектуру подготовить.
+
+Constraints:
+1. Не переписывать courier mode.
+2. Не трогать admin panel без необходимости.
+3. Не добавлять пока live dispatcher map.
+4. Не делать ещё реальную GPS-карту курьера, если её нет.
+5. Не добавлять лишние сущности.
+6. Сделать стабильный MVP live customer tracking.
+
+Architecture requirements:
+1. Separate customer event bus layer / extension of existing event bus.
+2. Separate customer WebSocket service in mobile app.
+3. Tracking screen не должен содержать всю live business logic внутри себя — использовать service/context/state layer.
+4. Подготовить проект так, чтобы следующим этапом можно было:
+   - добавить real courier location updates
+   - добавить dispatcher live dashboard
+   - добавить richer customer notifications
+
+После завершения покажи:
+1. Какие backend endpoints / WebSocket flows были добавлены.
+2. Какие customer events уже работают real-time.
+3. Какие app files были изменены.
+4. Как теперь работает tracking screen.
+5. Как работает reconnect / fallback.
+6. Что следующим шагом нужно сделать для real map tracking и dispatcher live dashboard.

@@ -1,0 +1,124 @@
+Отлично. Теперь переходим к следующей подзадаче: реализовать real map tracking курьера для customer app и admin/dispatcher panel.
+
+Что нужно сделать сейчас:
+1. Добавить реальную передачу геопозиции курьера в систему.
+2. Сделать так, чтобы courier app отправлял свою локацию на backend во время активного заказа.
+3. Сделать так, чтобы customer tracking screen показывал live position курьера на карте.
+4. Сделать так, чтобы admin/dispatcher panel тоже показывал live courier position на карте или в live order detail.
+5. Не ломать текущий courier flow, customer flow и live dispatch.
+6. Не делать пока слишком сложную навигацию или routing engine — только стабильный MVP real map tracking.
+
+Что должно работать после этого этапа:
+1. Если у курьера есть active order и он online, приложение получает его текущую геопозицию.
+2. Геопозиция отправляется на backend с разумной частотой.
+3. Backend сохраняет последнюю позицию курьера.
+4. Backend транслирует обновления позиции в real-time:
+   - customer tracking screen
+   - admin live dispatch / order detail
+5. Клиент видит на карте:
+   - свою точку доставки / pickup если уже есть
+   - текущую позицию курьера
+6. Admin/dispatcher видит:
+   - текущую позицию курьера
+   - связанный активный заказ
+7. Если active order завершён или courier offline, tracking updates останавливаются.
+8. Если permission на location denied — это корректно обрабатывается без падения приложения.
+
+Courier app requirements:
+1. Подключить location permission.
+2. Запрашивать доступ к геолокации только когда это реально нужно.
+3. Начинать location tracking только когда:
+   - role = courier
+   - courier online
+   - есть active order
+4. Останавливать tracking когда:
+   - order delivered
+   - order cancelled
+   - courier offline
+5. Не отправлять location постоянно без причины.
+6. Использовать разумный интервал / distance threshold для MVP.
+7. Не делать пока background navigation-grade tracking, если это сильно усложняет MVP. Но архитектуру подготовить.
+
+Backend requirements:
+1. Добавить поля / таблицу для хранения live courier location:
+   - courierId
+   - lat
+   - lng
+   - heading optional
+   - speed optional
+   - updatedAt
+2. Добавить endpoint для обновления позиции курьера:
+   - POST /api/courier/location
+3. Проверять JWT и роль courier.
+4. При обновлении позиции:
+   - сохранять last known location
+   - транслировать update через WebSocket нужным участникам
+5. Отправлять live location events:
+   - customer of that order
+   - admin/dispatcher
+6. Не слать location всем подряд.
+7. Связать location update только с текущим active order или текущим courier session context.
+
+Customer app requirements:
+1. Обновить tracking screen.
+2. Добавить карту на tracking screen.
+3. Показывать:
+   - courier marker
+   - delivery target / customer target / pickup marker по минимально нужной логике
+4. Статусы order timeline оставить.
+5. Карта должна быть secondary to status tracking, а не ломать текущий UX.
+6. Если реальная позиция ещё недоступна — показывать обычный status tracking без ошибки.
+
+Admin panel requirements:
+1. Обновить live dispatcher dashboard или order detail.
+2. Показать live courier position для active deliveries.
+3. Достаточно MVP:
+   - карта в order detail
+   - или компактный live map block на dispatcher page
+4. Не делать пока огромную fleet-map CRM.
+5. Показать useful live operations map.
+
+Realtime requirements:
+1. Использовать уже существующую WebSocket architecture.
+2. Добавить новые event types для location updates.
+3. Customer получает только location своего заказа.
+4. Admin получает location relevant couriers/orders.
+5. Courier own UI можно не перегружать map tracking, если это не нужно.
+
+ETA requirements:
+1. Пока не делать полный production ETA engine.
+2. Подготовить структуру для ETA placeholder.
+3. Если можно быстро и чисто, добавить simple estimated time placeholder.
+4. Не усложнять MVP.
+
+Constraints:
+1. Не ломать текущий auth/role system.
+2. Не переделывать существующий live dispatch.
+3. Не переписывать customer/courier architecture.
+4. Не добавлять лишние фичи.
+5. Не делать пока полный route optimization.
+6. Сделать working real map tracking MVP.
+
+Architecture requirements:
+1. Separate location service in courier app.
+2. Separate backend location service / handler.
+3. Separate WebSocket event handling for location updates.
+4. Tracking screen и admin panel должны получать location updates через existing realtime architecture.
+5. Подготовить проект так, чтобы следующим этапом можно было:
+   - добавить ETA engine
+   - background tracking
+   - route polyline
+   - App Store production polish
+
+После завершения покажи:
+1. Какие поля/таблицы были добавлены для courier location.
+2. Какие backend endpoints были добавлены.
+3. Какие WebSocket events добавлены для location tracking.
+4. Какие app/admin files были изменены.
+5. Как customer tracking screen теперь показывает courier position.
+6. Как admin panel показывает live courier position.
+7. Как работает start/stop location tracking у courier.
+8. Что следующим шагом лучше сделать:
+   - ETA
+   - background tracking
+   - App Store polish

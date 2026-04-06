@@ -1,0 +1,136 @@
+CONTEXT:
+В проекте уже есть:
+- customer mobile app
+- courier mode
+- admin panel
+- realtime dispatch
+- pricing/promo
+- refunds/coupons/invoices/payout foundation
+- Stripe execution layer foundation
+- PDF invoice generation
+- finance stats
+- email provider abstraction
+- webhook foundation
+
+Сейчас нужно НЕ строить новые большие фичи, а довести проект до состояния:
+PRODUCTION CREDENTIALS WIRING + FINAL BETA OPERATIONS READINESS
+
+Главная цель:
+1. Подготовить систему к реальному подключению live/test credentials.
+2. Чётко разделить mock mode и live mode.
+3. Проверить, что все финтех и операционные слои готовы к реальной бете.
+4. Подготовить проект к финальному beta QA и последующему App Store/TestFlight этапу.
+
+TASK OVERVIEW:
+Реализуй следующий блок:
+
+PART 1 — ENV / CONFIG HARDENING
+1. Приведи все внешние интеграции к чёткой env-driven конфигурации.
+2. Подготовь понятный config layer для:
+   - Stripe
+   - Stripe webhook
+   - SendGrid
+   - storage provider
+   - push credentials if relevant
+3. Чётко раздели:
+   - mock mode
+   - live mode
+4. Если credentials не заданы:
+   - система должна работать безопасно в mock/degraded mode
+   - без падений
+5. Добавь понятную диагностику статуса интеграций.
+
+PART 2 — INTEGRATION READINESS CHECKS
+1. Добавь admin/system endpoint или diagnostic service, который показывает readiness:
+   - Stripe configured or not
+   - webhook configured or not
+   - SendGrid configured or not
+   - storage configured or not
+2. Не светить секреты.
+3. Показывать только safe readiness status.
+4. Admin panel должна иметь basic system/integration status visibility if appropriate.
+
+PART 3 — STRIPE LIVE/TEST WIRING READINESS
+1. Подготовь clean switching between Stripe mock/test/live flow.
+2. Убедись, что:
+   - PaymentIntent create
+   - capture
+   - cancel
+   - refund
+   - webhook verification
+   корректно работают через configuration layer.
+3. Добавь safe guards against accidental misuse of live mode.
+4. Подготовь понятный список env variables, которые нужны для real wiring.
+
+PART 4 — EMAIL / INVOICE DELIVERY READINESS
+1. Убедись, что invoice email delivery может работать в:
+   - mock mode
+   - provider mode
+2. Добавь delivery/error logging.
+3. Проверь retry-safe logic for invoice emails.
+4. Убедись, что PDF invoice flow работает cleanly when storage/email config is available.
+
+PART 5 — STORAGE READINESS
+1. Подготовь clean storage abstraction verification.
+2. Определи:
+   - local/mock storage
+   - cloud storage mode
+3. Добавь readiness reporting.
+4. Убедись, что invoice PDFs не теряются между режимами.
+
+PART 6 — BETA OPS READINESS
+1. Подготовь admin-visible operational readiness summary:
+   - payments
+   - invoices
+   - refunds
+   - payouts
+   - emails
+   - realtime
+2. Не делай новую ERP.
+3. Сделай useful beta operations readiness dashboard/block.
+
+PART 7 — FINAL SYSTEM SAFETY PASS
+1. Проверь critical finance actions:
+   - no double capture
+   - no unsafe refund
+   - no broken invoice generation
+   - no repeated payout item execution
+2. Добавь недостающие guards if needed.
+3. Проверь idempotency / retries / error handling.
+4. Не добавляй новые фичи — только hardening.
+
+PART 8 — BETA QA PREP
+1. Подготовь проект к финальному beta QA.
+2. Составь краткий machine-readable/engineer-readable summary:
+   - что уже можно тестировать в live beta
+   - что требует real credentials
+   - что ещё остаётся перед App Store / TestFlight
+3. Не делай пока сам App Store packaging.
+
+WHAT NOT TO DO:
+1. Не строить новые продуктовые функции.
+2. Не менять pricing logic.
+3. Не менять core flows без причины.
+4. Не строить новые admin sections кроме readiness visibility.
+5. Не уходить в маркетинг/email campaigns.
+6. Не начинать App Store submission work на этом этапе.
+
+DELIVERABLES:
+1. Env/config hardening
+2. Integration readiness layer
+3. Safe mock/live switching
+4. Admin/system readiness visibility
+5. Final finance safety hardening
+6. Beta QA preparation summary
+7. Чёткий список:
+   - какие env нужны
+   - что работает уже сейчас
+   - что требует live credentials
+   - что следующим этапом делать перед релизом
+
+DEFINITION OF DONE:
+1. Система готова к подключению реальных credentials без хаоса.
+2. Mock и live режимы чётко разделены.
+3. Admin понимает readiness состояния интеграций.
+4. Финансовые операции стали безопаснее и прозрачнее.
+5. Проект готов к этапу final beta QA, а потом уже к App Store/TestFlight.

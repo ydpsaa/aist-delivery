@@ -1,0 +1,85 @@
+Отлично. Теперь переходим к следующей подзадаче: подключить push notifications для courier app, чтобы курьер получал уведомления о новых заказах и изменениях статусов, даже когда приложение свернуто.
+
+Что нужно сделать сейчас:
+1. Добавить поддержку push notifications в mobile courier app.
+2. Зарегистрировать device push token курьера на backend.
+3. Сохранять push token в courier profile.
+4. Отправлять push notification, когда появляется новый available order для курьера.
+5. Отправлять push notification при ключевых изменениях courier-related order state.
+6. Не ломать текущий customer flow.
+7. Не делать пока full customer push notifications, фокус только на courier notifications.
+
+Что должно работать после этого этапа:
+1. Если user.role = courier и он заходит в приложение, устройство регистрирует push token.
+2. Push token сохраняется на backend и обновляется при необходимости.
+3. Если курьер online и появляется новый order со статусом searching, курьер получает push:
+   - New delivery available
+4. Если заказ был отменён или изменён и это касается курьера, можно отправлять push:
+   - Order updated
+   - Order cancelled
+5. При нажатии на push notification приложение должно открывать courier mode и вести в нужный экран:
+   - available orders
+   - current order
+   - order detail если возможно без лишней сложности
+
+Backend requirements:
+1. Добавить поле для push token в courier_profiles, если его ещё нет:
+   - pushToken или fcmToken
+2. Добавить endpoint для сохранения / обновления courier push token:
+   - POST /api/courier/push-token
+3. Проверять JWT и роль courier на этом endpoint.
+4. Подготовить backend notification service.
+5. При появлении нового available order отправлять push всем online courier users или по выбранной логике MVP.
+6. При order cancelled / updated отправлять push релевантному courier, если он назначен.
+7. Сделать notification sending как отдельный service-layer модуль, а не вшивать логику хаотично в routes.
+
+App requirements:
+1. Подключить production-ready push notification solution, совместимую с текущим стеком приложения.
+2. При старте courier mode:
+   - запросить permission на notifications
+   - получить device push token
+   - отправить token на backend
+3. Сохранить current notification permission state.
+4. Если permission denied — корректно обработать это без падения приложения.
+5. Добавить минимальную настройку в courier profile:
+   - notifications enabled / disabled (можно как placeholder UI, если нужно)
+6. Не трогать customer UI на этом этапе.
+
+Notification requirements:
+1. Payload должен содержать:
+   - type
+   - orderId если есть
+   - title
+   - body
+2. При открытии push должна быть нормальная deep-link/navigation обработка.
+3. Не делать пока слишком много notification типов.
+4. Достаточно MVP типов:
+   - new_order_available
+   - order_updated
+   - order_cancelled
+
+Constraints:
+1. Не делать пока WebSocket/SSE.
+2. Не убирать пока polling из CourierContext.
+3. Не делать пока customer notifications.
+4. Не переделывать courier UI без причины.
+5. Не ломать current backend order logic.
+6. Сделать push system как стабильную MVP-надстройку над уже работающим courier flow.
+
+Architecture requirements:
+1. Separate notification service on backend.
+2. Separate push registration service on mobile app.
+3. Notification handler в app должен быть изолирован и расширяем.
+4. Подготовить проект так, чтобы следующим этапом можно было:
+   - добавить customer push notifications
+   - добавить live dispatch
+   - заменить polling на real-time
+
+После завершения покажи:
+1. Какие поля/таблицы были изменены в базе.
+2. Какие backend endpoints были добавлены.
+3. Как courier app регистрирует push token.
+4. Какой push provider используется.
+5. Какие notification types уже работают.
+6. Как работает navigation after tap on notification.
+7. Что следующим шагом нужно сделать для live dispatch / WebSocket / SSE.

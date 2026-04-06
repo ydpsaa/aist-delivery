@@ -1,0 +1,105 @@
+Отлично. Теперь переходим к следующей подзадаче: заменить mock courier logic на реальную backend-логику и подготовить admin-controlled courier management, не ломая текущий customer flow и courier UI.
+
+Что нужно сделать сейчас:
+1. Убрать зависимость courier mode от mock данных.
+2. Подключить реальные backend endpoints для courier mode.
+3. Сделать так, чтобы courier dashboard получал реальные данные с сервера.
+4. Сделать так, чтобы online/offline статус курьера сохранялся на backend.
+5. Сделать так, чтобы available orders приходили с backend.
+6. Сделать так, чтобы current active order приходил с backend.
+7. Сделать так, чтобы действия курьера обновляли реальный order state на backend:
+   - Accept order
+   - Decline order
+   - Arrived
+   - Picked up
+   - Delivered
+
+Backend requirements:
+1. Добавить backend endpoints для courier mode:
+   - GET /api/courier/me
+   - GET /api/courier/orders/available
+   - GET /api/courier/orders/current
+   - GET /api/courier/orders/history
+   - POST /api/courier/status
+   - POST /api/courier/orders/:id/accept
+   - POST /api/courier/orders/:id/decline
+   - POST /api/courier/orders/:id/arrived
+   - POST /api/courier/orders/:id/picked-up
+   - POST /api/courier/orders/:id/delivered
+2. Проверять JWT и роль courier на всех courier endpoints.
+3. Если пользователь не courier — не давать доступ к courier endpoints.
+4. Добавить backend-логику проверки статусов:
+   - нельзя взять новый заказ, если уже есть active order
+   - нельзя перейти к следующему статусу, если предыдущий не завершён
+5. Подготовить order state machine для courier flow.
+
+Data requirements:
+1. Если order schema ещё не готова полностью — добавь минимально нужные поля для courier flow:
+   - id
+   - customerId
+   - courierId
+   - category
+   - pickupAddress
+   - deliveryAddress
+   - status
+   - price
+   - createdAt
+   - updatedAt
+2. Поддержать статусы:
+   - searching
+   - assigned
+   - courier_arrived
+   - picked_up
+   - delivered
+   - cancelled
+3. Связать courierProfiles с user.
+4. Сохранить courier onlineStatus в базе.
+
+App requirements:
+1. Обновить CourierContext так, чтобы он работал с backend API, а не с mock.
+2. Сохранить текущий UI courier screens.
+3. Подключить loading, empty, error states для:
+   - available orders
+   - current order
+   - history
+4. После действий курьера обновлять экран без ручной перезагрузки.
+5. Если courier offline — список available orders не показывать или показывать empty state.
+6. Не трогать customer screens, кроме того что order state теперь должен быть совместим с будущим tracking.
+
+Admin/backend preparation:
+1. Подготовить backend-логику для изменения роли user → courier через admin-controlled update.
+2. Пока не делать полноценную mobile admin UI.
+3. Но добавь backend/admin-ready endpoint или service-layer логику для:
+   - смены роли на courier
+   - смены роли обратно на customer
+   - обновления courier profile fields
+4. Если нужно, добавь временный protected admin route или service scaffold, чтобы это можно было потом быстро подключить в web admin panel.
+
+UI/UX constraints:
+1. Не ломать существующий стиль AIST.
+2. Не переделывать уже готовые customer/courier экраны без причины.
+3. Не добавлять лишние фичи.
+4. Не делать пока push notifications.
+5. Не делать пока live socket dispatch.
+6. Не делать пока real map tracking.
+7. Сделать стабильную backend-driven courier MVP основу.
+
+Architecture requirements:
+1. Clean architecture.
+2. Отдельные services для courier API.
+3. Отдельная бизнес-логика для order status transitions.
+4. Не смешивать backend rules прямо в UI.
+5. Подготовить проект так, чтобы следующим этапом можно было подключить:
+   - admin web panel
+   - push notifications
+   - live dispatch
+   - customer tracking
+
+После завершения покажи:
+- какие backend endpoints были добавлены,
+- какие схемы/таблицы были обновлены,
+- какие файлы изменены,
+- как теперь courier mode получает реальные данные,
+- как работает online/offline,
+- как работает state transition order statuses,
+- что следующим этапом нужно сделать для admin panel и push notifications.

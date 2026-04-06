@@ -1,0 +1,311 @@
+CONTEXT:
+Проект AIST уже имеет:
+- customer mobile app
+- courier mode
+- admin panel
+- auth
+- order lifecycle
+- live dispatch
+- realtime tracking
+- map/location tracking
+- working admin operations
+
+Core flows уже стабилизированы и проверены end-to-end. Теперь нужно внедрить реальную бизнес-логику цен и промо-правил поверх уже работающей системы.
+
+Основа pricing logic берётся из утверждённого технического конспекта AIST:
+- Flash Express
+- Cargo Window
+- Buy For Me
+- SLA logic
+- zone logic
+- pricing formulas
+- size surcharges
+- time coefficients
+- admin-controlled pricing architecture
+- promo/voucher foundation
+- refund foundation
+Все изменения нужно делать как production-style configurable pricing system, а не как набор хардкода.  [oai_citation:1‡AIST_TechSpec_v1_1.docx](sediment://file_0000000024f0720aabbb9dd9491e201f)
+
+CURRENT PRODUCT SCOPE:
+Активные customer-facing сервисы на этом этапе:
+1. Flash Express
+2. Buy For Me
+3. Cargo Window
+
+Не выводить как отдельные customer-facing продукты на этом этапе:
+- Large Delivery как отдельную главную категорию
+- future XL/van standalone flow
+Но архитектурно не ломать возможность добавить их позже.
+
+BUSINESS RULES TO IMPLEMENT:
+1. Flash Express pricing:
+   - база 89 CZK
+   - первые 1 km включены
+   - дальше 20 CZK / km
+   - day coefficient 1.00
+   - evening coefficient 1.20
+   - night coefficient 1.35
+   - urgent under 15 min coefficient 1.30 поверх time coefficient
+   - weekend coefficient 1.15, но применяется только один наибольший time/weekend coefficient
+   - exception: urgent < 15 min добавляется поверх time coefficient
+2. Cargo Window pricing:
+   - окна:
+     - 07:00–10:00
+     - 11:00–14:00
+     - 14:00–17:00
+     - 17:00–21:00
+     - next day / next morning
+   - base window prices по техконспекту
+   - первые 5 km включены
+   - дальше +15 CZK / km
+   - size surcharge сверху
+3. Buy For Me pricing:
+   - Service Fee 199 CZK
+   - 24 CZK / km от магазина до клиента
+   - ожидание:
+     - первые 5 минут бесплатно
+     - с 6-й минуты 7 CZK / min
+   - deposit hold 10% min 150 CZK
+   - cash fee +49 CZK если включено
+   - QR/non-cash +0 CZK
+4. Outside Prague logic:
+   - за пределами Праги +19 CZK / km
+5. Low-demand surcharge:
+   - +15% автоматически, если зона/логика спроса это требует
+6. Promo logic:
+   - foundation для промокодов / ваучеров / first-order promo
+   - админ должен уметь управлять этим через admin panel
+7. SLA/refund foundation:
+   - подготовить правила для partial/full compensation logic
+   - не строить пока финальный financial payout engine, но foundation должна быть ready
+
+IMPORTANT IMPLEMENTATION PRINCIPLE:
+Никакого хаотичного хардкода цен по экранным компонентам.
+Нужен централизованный pricing engine + configurable admin-managed pricing rules.
+
+TASK:
+Реализуй следующий этап:
+
+PART 1 — CENTRAL PRICING ENGINE
+1. Создай централизованный pricing engine на backend.
+2. Вынеси pricing rules в понятную структуру/таблицы/конфиг-модели.
+3. Реализуй расчёт цены для:
+   - Flash Express
+   - Cargo Window
+   - Buy For Me
+4. Сделай pricing engine reusable:
+   - для customer order creation
+   - для price preview
+   - для admin preview/testing
+5. Сделай нормальный breakdown результата:
+   - base
+   - distance charge
+   - time coefficient
+   - urgency coefficient
+   - size surcharge
+   - outside Prague surcharge
+   - low-demand surcharge
+   - service fee
+   - waiting fee
+   - discount
+   - final total
+
+PART 2 — DATA MODEL / STORAGE
+1. Добавь нужные таблицы / модели / конфиг-хранилище для:
+   - service pricing config
+   - time coefficients
+   - window pricing
+   - size surcharges
+   - zone rules
+   - promo codes
+   - vouchers
+   - discount rules
+   - feature toggles / service visibility if needed
+2. Не ломай существующие orders.
+3. Если нужно, расширь order price fields:
+   - subtotal
+   - discountAmount
+   - surchargeAmount
+   - pricingBreakdown JSON
+   - promoCodeUsed
+   - voucherUsed
+4. Подготовь структуру под future invoice/refund logic, но не строй сейчас весь payout engine.
+
+PART 3 — PRICE CALCULATION API
+1. Добавь backend endpoints для расчёта цены до создания заказа.
+2. Сделай единый price preview flow для customer app.
+3. Минимально нужны endpoints типа:
+   - POST /api/pricing/flash
+   - POST /api/pricing/cargo
+   - POST /api/pricing/bfm
+   или один unified endpoint с type-based routing
+4. Endpoint должен возвращать:
+   - валидный price breakdown
+   - ошибки валидации
+   - applicability of promo
+   - surcharge reasoning
+
+PART 4 — ORDER CREATION INTEGRATION
+1. Подключи pricing engine к реальному order creation flow.
+2. Customer app не должен больше использовать временные/mock цены.
+3. При создании заказа:
+   - сначала считаем цену
+   - потом сохраняем order с финальным breakdown
+4. Для Buy For Me:
+   - подготовь расчёт deposit hold
+   - cash fee / QR fee
+5. Не ломай current create order UX.
+6. Если UI пока не умеет показывать весь breakdown — покажи минимум корректную итоговую цену и понятные строки.
+
+PART 5 — ADMIN PRICING TOOLS
+1. Добавь в admin panel pricing management section.
+2. Админ должен уметь:
+   - менять базовую цену Flash
+   - менять km rate Flash
+   - менять time coefficients
+   - менять urgent coefficient
+   - менять Cargo window base prices
+   - менять Cargo km rate
+   - менять size surcharges
+   - менять Buy For Me service fee
+   - менять Buy For Me wait rules
+   - менять outside Prague surcharge
+   - менять low-demand surcharge
+3. Все изменения должны сохраняться и реально влиять на pricing engine.
+4. Не делать ugly raw CRUD. Сделать удобный operations-style pricing admin UI.
+
+PART 6 — PROMO ENGINE
+1. Реализуй promo code system.
+2. Реализуй voucher foundation.
+3. Админ должен уметь:
+   - создать promo code
+   - активировать / деактивировать
+   - задать discount type:
+     - fixed amount
+     - percentage
+     - first order only
+     - service-specific
+     - validity period
+     - usage limits
+   - ограничить по услугам:
+     - Flash
+     - Cargo
+     - Buy For Me
+4. Подготовь foundation для “First delivery -50%” campaign logic.
+5. Customer app должен уметь:
+   - ввести promo code
+   - увидеть discount
+   - увидеть final recalculated total
+6. Не делать пока email marketing system.
+7. Но архитектурно не мешать её добавить позже.
+
+PART 7 — ZONE LOGIC
+1. Реализуй zone-aware pricing foundation.
+2. Поддержать:
+   - Praha base logic
+   - outside Prague +19 CZK / km
+   - low-demand +15%
+3. Если полноценной геозонной системы ещё нет:
+   - сделай MVP layer, который можно потом расширить
+4. В pricing breakdown должно быть видно:
+   - что именно добавилось
+   - почему
+5. Не делать overly complex GIS-engine на этом этапе.
+
+PART 8 — CUSTOMER UI INTEGRATION
+1. Обнови create order / confirm order / price preview screens.
+2. Клиент должен видеть:
+   - service type
+   - базовую цену / starting price
+   - итоговую цену
+   - если есть — discount / promo applied
+   - понятное сообщение при surcharge
+3. Не перегружай UI бухгалтерией.
+4. Сделай UI production-friendly.
+5. Если breakdown длинный — покажи главное, но не скрывай итог.
+
+PART 9 — ADMIN PROMO / PRICE OPS UX
+1. В admin panel добавь:
+   - Pricing section
+   - Promo Codes / Vouchers section
+2. Нужны:
+   - table/list view
+   - create/edit modal/forms
+   - activation toggle
+   - usage counters if possible
+   - validity dates
+3. Всё должно быть в духе текущей admin panel и brand system.
+
+PART 10 — SLA / REFUND FOUNDATION
+1. Подготовь foundation для SLA compensation logic:
+   - flash late > 60 min
+   - cargo window miss
+   - cancellation-related compensation
+2. Пока не строй full Stripe refund engine, если это уже не готово.
+3. Но заложи:
+   - flags
+   - fields
+   - rule evaluation layer
+   - admin visibility
+4. Чтобы следующий этап мог без рефакторинга подключить реальные refunds.
+
+WHAT NOT TO DO:
+1. Не ломать работающие auth flows.
+2. Не ломать courier lifecycle.
+3. Не ломать realtime.
+4. Не ломать admin operations, уже работающие сейчас.
+5. Не уходить в invoice/payout implementation полностью.
+6. Не делать ещё full accounting engine.
+7. Не переписывать весь UI без причины.
+8. Не строить App Store packaging.
+9. Не делать email marketing сейчас.
+10. Не делать giant ERP/CRM — только нужный pricing/promo admin layer.
+
+ARCHITECTURE REQUIREMENTS:
+1. Pricing engine должен быть централизован и testable.
+2. Promo engine должен быть отделён от UI.
+3. Admin edits должны писать в backend-driven config.
+4. Order creation должен использовать только backend-calculated prices.
+5. Не дублируй расчёты на клиенте и сервере как независимые источники истины.
+6. Backend — source of truth.
+7. Подготовь foundation так, чтобы следующим этапом можно было:
+   - refunds
+   - invoice generation
+   - payout logic
+   - subscription/membership rules if needed later
+
+VALIDATION REQUIREMENTS:
+1. Нельзя создать заказ без валидного расчёта цены.
+2. Нельзя применить невалидный promo code.
+3. Нельзя применить promo вне срока / лимитов / сервиса.
+4. Breakdown всегда должен сходиться в final total.
+5. Всё должно быть устойчиво к bad input.
+
+DELIVERABLES:
+1. Backend pricing engine
+2. Backend promo engine foundation
+3. Admin pricing management UI
+4. Admin promo management UI
+5. Customer price preview integration
+6. Order creation pricing integration
+7. Zone/surcharge logic
+8. SLA/refund foundation
+9. Summary:
+   - какие таблицы/схемы добавлены
+   - какие endpoints добавлены
+   - какие app screens обновлены
+   - какие admin pages/sections добавлены
+   - какие pricing rules теперь editable
+   - что осталось на следующий этап
+
+DEFINITION OF DONE:
+1. Customer app считает реальные цены по backend rules.
+2. Admin panel может менять pricing rules.
+3. Promo codes реально работают.
+4. Breakdown сохраняется в заказе.
+5. Outside Prague и low-demand logic работают.
+6. Ничего из core system не сломано.
+7. Система готова к следующему этапу: refunds / invoice / payout logic.
+
+START:
+Начни с backend pricing engine и data model, затем подключи price preview и order creation, затем сделай admin pricing tools и promo tools, и только потом обнови customer UI отображение цен. После выполнения покажи реальный список схем, endpoints, admin sections и customer screens, которые были изменены.

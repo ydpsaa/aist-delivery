@@ -1,0 +1,115 @@
+CONTEXT:
+В проекте уже есть:
+- customer mobile app
+- courier mode
+- admin panel
+- realtime dispatch
+- pricing/promo
+- refunds/coupons/invoices/payout foundation
+- Stripe execution layer foundation
+- PDF invoices
+- email abstraction
+- system status page
+- mock/live integration readiness
+- BETA_QA.md
+
+Сейчас не нужно строить новые большие функции. Нужно провести финальную подготовку продукта к реальному beta-тесту и следующему этапу TestFlight / App Store readiness.
+
+TASK OVERVIEW:
+Реализуй FINAL BETA QA + RELEASE PREP.
+
+PART 1 — QA EXECUTION CHECKLIST
+1. Возьми существующий BETA_QA.md и преврати его в реальный executable verification pass.
+2. Проверь end-to-end ключевые сценарии:
+   - customer register/login
+   - create order
+   - price preview
+   - promo/coupon apply
+   - courier role switch
+   - courier online/offline
+   - accept order
+   - order lifecycle to delivered
+   - customer tracking
+   - admin live dispatch
+   - admin cancel
+   - refund/coupon outcome
+   - invoice generation/download
+   - payout summary visibility
+3. Для каждого сценария:
+   - working
+   - partially working
+   - blocked by credentials/device/live env
+4. Исправь найденные критические баги, если они мешают beta readiness.
+
+PART 2 — LIVE CREDENTIALS READINESS
+1. Проверь все integration points:
+   - Stripe
+   - SendGrid
+   - storage
+   - push
+   - auth providers if relevant
+2. Чётко покажи:
+   - что работает в mock
+   - что требует real keys
+   - какие env variables нужны
+3. Подготовь безопасную инструкцию для подключения реальных credentials без хаоса.
+
+PART 3 — MOBILE RELEASE READINESS
+1. Проверь mobile app на release readiness:
+   - splash
+   - onboarding
+   - auth
+   - home
+   - create order
+   - tracking
+   - courier mode
+   - profile
+2. Проверь permissions and config readiness:
+   - location
+   - notifications
+   - camera/photo if needed
+3. Подготовь release checklist для mobile.
+
+PART 4 — ADMIN / OPS READINESS
+1. Проверь что admin panel usable для beta:
+   - dashboard
+   - live dispatch
+   - pricing
+   - refunds
+   - coupons
+   - invoices
+   - payouts
+   - system page
+2. Исправь blocker bugs если найдёшь.
+
+PART 5 — RELEASE PREP FOUNDATION
+1. Подготовь проект к следующему шагу:
+   - TestFlight
+   - App Store submission
+2. Не делай сам submission, но подготовь:
+   - release readiness notes
+   - remaining blockers
+   - what still needs real device/live env validation
+
+PART 6 — FINAL OUTPUT
+После завершения покажи:
+1. Полный QA summary по сценариям
+2. Какие баги были исправлены
+3. Какие блокеры остались
+4. Что требует реальные credentials
+5. Готов ли проект к:
+   - closed beta
+   - TestFlight prep
+   - App Store prep later
+
+IMPORTANT:
+1. Не добавлять новые большие фичи.
+2. Не уходить в новый product scope.
+3. Фокус только на QA, readiness и release preparation.
+4. Если что-то не может быть подтверждено в Replit environment — честно указать это.
+
+DEFINITION OF DONE:
+1. Есть финальная честная beta QA картина.
+2. Известны все remaining blockers.
+3. Проект либо готов к closed beta, либо ясно понятно, что ещё мешает.
+4. Есть чёткий мост к TestFlight / App Store этапу.

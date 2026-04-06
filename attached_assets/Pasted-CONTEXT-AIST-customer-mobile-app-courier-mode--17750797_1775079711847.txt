@@ -1,0 +1,221 @@
+CONTEXT:
+У проекта AIST уже есть рабочая структура:
+- customer mobile app
+- courier mode внутри мобильного приложения
+- admin panel website
+- auth
+- realtime
+- tracking
+- admin dashboard
+
+Сейчас не нужно строить новые большие функции. Нужно сделать полный визуальный ребрендинг и theme-system update под новый бренд AIST.
+
+Главная цель:
+1. Перевести интерфейс под новый логотип AIST.
+2. Обновить цветовую палитру.
+3. Сделать полноценную поддержку Light / Dark theme.
+4. Обновить UI-стиль кнопок, карточек, акцентов и логотипов.
+5. Сохранить текущую архитектуру и логику приложения.
+
+BRAND DIRECTION:
+Основой бренда является логотип AIST, который уже добавлен в проект.
+Нужно использовать стиль:
+- premium
+- minimal
+- modern logistics tech
+- clean Apple-like UI
+- soft glassmorphism / translucent elements
+- rounded components
+- дорогой и спокойный визуальный язык, без дешёвого неона
+
+PRIMARY BRAND IDEA:
+AIST = современный premium tech/logistics сервис.
+
+COLOR DIRECTION:
+Построй палитру на основе логотипа AIST:
+- основной акцент: насыщенный синий / electric blue из логотипа
+- deep blue / navy как вторичный акцент
+- чёрный / почти чёрный для dark mode
+- белый / светлый фон для light mode
+- нейтральные серые для текстов, бордеров, secondary UI
+
+Создай две полноценные темы:
+1. Dark theme
+2. Light theme
+
+Плюс:
+3. System theme support / theme switch support (архитектурно подготовить и внедрить)
+
+DESIGN STYLE REQUIREMENTS:
+1. Кнопки:
+   - rounded
+   - premium
+   - semi-transparent / glass-like where appropriate
+   - в духе последних Apple-style UI обновлений
+   - primary CTA button, secondary outline/glass button, tertiary text button
+2. Карточки:
+   - мягкие скругления
+   - светлая или тёмная полупрозрачная поверхность там, где это уместно
+   - аккуратные тени / мягкие borders
+   - premium dashboard / fintech style
+3. Inputs:
+   - clean
+   - современный минимализм
+   - правильно читаются в обеих темах
+4. Navigation:
+   - аккуратные active states
+   - единый стиль табов, sidebar, headers
+5. Status colors:
+   - не ломать смысл статусов
+   - success / warning / error должны остаться понятными
+   - но привести их к новому брендовому окружению
+6. Typography:
+   - clean, premium, readable
+   - визуально сильнее, чем сейчас
+7. Логотип:
+   - использовать icon-only и full logo version в правильных местах
+   - не вставлять логотип хаотично
+   - full logo использовать в splash, auth, admin login, key headers where needed
+   - icon-only использовать в app icon areas / compact nav areas where appropriate
+
+TASK:
+Сделай полный Brand Update для всех частей проекта:
+
+1. Создай единый theme system:
+   - colors
+   - spacing
+   - radius
+   - shadows
+   - glass styles
+   - button variants
+   - card variants
+   - typography tokens
+   - light/dark theme tokens
+
+2. Обнови mobile app customer UI:
+   - splash / loading
+   - welcome
+   - onboarding
+   - auth entry
+   - login screens
+   - customer home
+   - create order flow
+   - tracking
+   - profile
+   - orders screens
+   - support screens if present
+
+3. Обнови courier mode UI:
+   - courier home
+   - available orders
+   - current order
+   - earnings block
+   - courier profile
+   - courier detail / actions screens
+
+4. Обнови admin panel UI:
+   - login
+   - dashboard
+   - users
+   - couriers
+   - orders
+   - live dispatch page
+   - side navigation
+   - tables
+   - modals
+   - forms
+   - filters
+
+5. Внедри Light / Dark theme support:
+   - mobile app
+   - admin panel
+   - подготовь theme switching architecture
+   - если возможно, добавь theme toggle
+   - если theme toggle уже неуместен сейчас, подготовь основу так, чтобы потом включить без рефакторинга
+
+6. Замени старые бренд-цвета и старые визуальные акценты на новую бренд-систему AIST.
+
+7. Обнови splash / loading визуал под новый логотип и новый стиль.
+
+8. Проверь, чтобы визуальные изменения не ломали:
+   - role-based routing
+   - auth
+   - realtime
+   - tracking
+   - courier mode
+   - admin panel functionality
+
+WHAT NOT TO DO:
+1. Не менять бизнес-логику.
+2. Не менять цены.
+3. Не менять promo logic.
+4. Не строить новые backend features.
+5. Не переписывать auth.
+6. Не ломать realtime.
+7. Не делать новый продукт с нуля.
+8. Не удалять существующие экраны.
+9. Не рефакторить всю архитектуру без необходимости.
+
+ARCHITECTURE REQUIREMENTS:
+1. Theme system должен быть централизованным.
+2. Не дублируй цвета по случайным файлам.
+3. Не хардкоди новые цвета по всему проекту хаотично.
+4. Вынеси brand tokens и theme variables в понятную структуру.
+5. Подготовь reusable UI pattern layer.
+6. Если есть старые стили — аккуратно мигрируй их на новую систему.
+
+MOBILE REQUIREMENTS:
+1. Обнови все основные customer/courier экраны под новый бренд.
+2. Проверь читаемость в light и dark mode.
+3. Не ухудши UX.
+4. CTA должны быть визуально сильными и дорогими.
+5. Tracking screen должен выглядеть как modern logistics app, а не raw dev screen.
+
+ADMIN PANEL REQUIREMENTS:
+1. Desktop-first.
+2. Premium operations look.
+3. Clean tables and cards.
+4. Live dispatch page должен выглядеть как реальный operations dashboard, а не просто dev table.
+5. Визуально синхронизировать с mobile brand.
+
+DESIGN PRIORITY:
+1. Единый бренд
+2. Чистота
+3. Премиальность
+4. Читаемость
+5. Лёгкая glassmorphism aesthetics
+6. Production-quality feel
+
+CONSTRAINTS:
+1. Не ломать рабочие user flows.
+2. Не убирать существующий функционал.
+3. Не переделывать тексты без необходимости.
+4. Не использовать случайные цвета, не связанные с логотипом.
+5. Не делать перегруженный Web3-neon style.
+6. Не превращать UI в слишком “игрушечный” или “маркетинговый”.
+7. Держать стиль mature, premium, tech.
+
+DELIVERABLES:
+1. Обновлённый mobile app visual system.
+2. Обновлённый courier mode visual system.
+3. Обновлённый admin panel visual system.
+4. Централизованный theme system.
+5. Light + Dark themes.
+6. Обновлённые buttons / cards / inputs / navigation styles.
+7. Использование логотипа AIST в правильных местах.
+8. Краткий summary:
+   - какие theme files добавлены/изменены
+   - какие ключевые экраны обновлены
+   - как реализован light/dark support
+   - какие brand tokens теперь используются
+
+DEFINITION OF DONE:
+1. Проект визуально читается как единый бренд AIST.
+2. Light theme и dark theme работают корректно.
+3. Mobile app и admin panel выглядят как один продукт.
+4. Все основные экраны обновлены под новый стиль.
+5. Ничего из рабочей логики не сломано.
+6. UI выглядит production-ready.
+
+START:
+Начни с создания/обновления централизованной theme system, затем последовательно примени её ко всем ключевым customer, courier и admin экранам. После выполнения покажи, какие файлы темы были созданы/изменены, какие экраны обновлены, и что ещё осталось визуально полировать

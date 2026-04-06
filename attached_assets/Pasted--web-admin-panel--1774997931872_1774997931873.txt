@@ -1,0 +1,141 @@
+Отлично. Теперь переходим к следующей подзадаче: сделать web admin panel для управления пользователями, курьерами и заказами, используя уже готовые admin endpoints, не ломая мобильное приложение.
+
+Что нужно сделать сейчас:
+1. Создать отдельную web admin panel для AIST.
+2. Подключить её к уже готовым backend admin endpoints.
+3. Сделать вход в admin panel только для пользователей с ролью admin.
+4. Не делать admin UI внутри мобильного приложения.
+5. Сохранить clean premium стиль AIST, но в desktop/web формате.
+
+Структура admin panel:
+1. Admin Login screen.
+2. Admin Dashboard.
+3. Users page.
+4. Couriers page.
+5. Orders page.
+6. Courier Profile Edit page / modal.
+7. Order Detail page / modal.
+
+Что должно быть в Admin Login:
+1. Вход по email/password.
+2. Проверка, что у пользователя role = admin.
+3. Если не admin — не пускать в panel.
+4. Сохранение admin session.
+5. Logout.
+
+Что должно быть в Dashboard:
+1. Общее количество users.
+2. Количество customers.
+3. Количество couriers.
+4. Количество active orders.
+5. Количество searching orders.
+6. Количество delivered orders.
+7. Количество online couriers.
+8. Несколько последних заказов.
+9. Несколько последних зарегистрированных пользователей.
+
+Что должно быть в Users page:
+1. Таблица пользователей.
+2. Поля:
+   - name
+   - email
+   - role
+   - phone
+   - createdAt
+3. Actions:
+   - change role to customer
+   - change role to courier
+   - change role to admin
+4. Search / filter by:
+   - name
+   - email
+   - role
+5. После смены роли обновлять таблицу без перезагрузки страницы.
+
+Что должно быть в Couriers page:
+1. Таблица курьеров.
+2. Поля:
+   - name
+   - email
+   - phone
+   - onlineStatus
+   - vehicleType
+   - vehiclePlate
+3. Actions:
+   - edit courier profile
+   - activate/deactivate courier if нужно как backend-ready placeholder
+4. Форма / modal редактирования:
+   - vehicle type
+   - vehicle plate
+   - online status
+5. Использовать уже готовый endpoint:
+   - PATCH /api/admin/courier/:userId/profile
+
+Что должно быть в Orders page:
+1. Таблица заказов.
+2. Поля:
+   - id
+   - customer
+   - courier
+   - category
+   - pickupAddress
+   - deliveryAddress
+   - price
+   - status
+   - createdAt
+3. Filters:
+   - by status
+   - by category
+   - by courier
+4. Order detail modal / page:
+   - полный статус заказа
+   - customer id
+   - courier id
+   - addresses
+   - price
+   - timestamps
+5. Пока не делать сложное ручное редактирование order state, но подготовить UI-архитектуру под это.
+
+Backend integration:
+1. Использовать уже готовые admin endpoints.
+2. Если для orders list / order details не хватает admin endpoints — добавить минимально нужные:
+   - GET /api/admin/orders
+   - GET /api/admin/orders/:id
+3. Если для dashboard stats не хватает endpoint — добавить минимально нужный:
+   - GET /api/admin/dashboard
+4. Все admin endpoints должны быть защищены:
+   - только JWT
+   - только role = admin
+
+UI/UX requirements:
+1. Desktop-first layout.
+2. Sidebar navigation.
+3. Clean tables.
+4. Minimal premium style.
+5. Не делать перегруженную CRM.
+6. Сделать быстро читаемую операционную панель.
+7. Поддержать loading / empty / error states.
+
+Architecture requirements:
+1. Separate admin app/web structure.
+2. Separate services for admin API.
+3. Route guards for admin-only pages.
+4. Reusable table/filter/modal components if это уместно.
+5. Не рефакторить лишнего в mobile app.
+
+Constraints:
+1. Не трогать текущую mobile customer/courier app логику.
+2. Не делать push notifications на этом этапе.
+3. Не делать live sockets на этом этапе.
+4. Не делать map-heavy admin view.
+5. Не добавлять лишние сущности.
+6. Сделать рабочую MVP admin panel, чтобы можно было реально управлять системой.
+
+После завершения покажи:
+- какие admin pages были добавлены,
+- какие backend admin endpoints были использованы / добавлены,
+- какие файлы были созданы / изменены,
+- как теперь работает admin auth guard,
+- как меняется роль user → courier,
+- как редактируется courier profile,
+- что следующим этапом нужно сделать для push notifications и live dispatch.

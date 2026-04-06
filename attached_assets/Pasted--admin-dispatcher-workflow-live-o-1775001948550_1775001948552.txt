@@ -1,0 +1,83 @@
+Отлично. Теперь переходим к следующей подзадаче: улучшить admin/dispatcher workflow и сделать live operations dashboard для управления заказами и курьерами в реальном времени.
+
+Что нужно сделать сейчас:
+1. Расширить текущую admin panel до dispatcher-style live dashboard.
+2. Показать в реальном времени:
+   - online couriers
+   - active couriers
+   - searching orders
+   - assigned orders
+   - delivered orders
+3. Добавить live updates в admin panel без ручного refresh.
+4. Использовать уже существующую real-time архитектуру и расширить её аккуратно.
+5. Не ломать mobile app.
+6. Не убирать текущую admin panel, а улучшить её.
+
+Что должно работать после этого этапа:
+1. Admin dashboard обновляется в реальном времени.
+2. Когда новый order создаётся — admin panel instantly это показывает.
+3. Когда courier принимает заказ — admin panel instantly это показывает.
+4. Когда courier меняет статус online/offline — admin panel instantly это показывает.
+5. Когда заказ отменён / доставлен — admin panel instantly это показывает.
+6. Не должно быть зависимости только от manual refresh.
+
+Admin/dispatcher requirements:
+1. Добавить live section на dashboard:
+   - online couriers now
+   - orders waiting now
+   - active deliveries now
+2. Добавить live orders table / section:
+   - newest first
+   - current status
+   - assigned courier
+3. Добавить live couriers section:
+   - courier name
+   - online/offline
+   - active order yes/no
+   - vehicle info если доступно
+4. Если нужно, добавить отдельную dispatcher page внутри admin panel.
+
+Realtime requirements:
+1. Реализовать real-time connection для admin panel:
+   - WebSocket или reuse existing event architecture
+2. Admin panel должна подписываться на live events.
+3. Events, которые должны обновлять admin UI:
+   - new_order_created
+   - order_assigned
+   - order_updated
+   - order_delivered
+   - order_cancelled
+   - courier_online
+   - courier_offline
+4. Не делать хаотичный refetch всей панели на каждый event — обновлять state разумно.
+
+Backend requirements:
+1. Добавить admin real-time flow / endpoint.
+2. Проверять JWT и role = admin.
+3. Отправлять dispatcher/admin events из уже существующего order lifecycle.
+4. Не дублировать business logic.
+5. Если нужно, добавить admin event bus layer аккуратно поверх текущей architecture.
+
+UI requirements:
+1. Desktop-first.
+2. Clean operational layout.
+3. Fast readability.
+4. Не перегружать CRM-логикой.
+5. Сделать именно useful live operations dashboard.
+
+Constraints:
+1. Не трогать customer app без необходимости.
+2. Не трогать courier UI без необходимости.
+3. Не делать пока real map tracking.
+4. Не добавлять лишние сущности.
+5. Сделать рабочий live dispatcher MVP.
+
+После завершения покажи:
+1. Какие backend realtime flows были добавлены.
+2. Какие admin pages/files были изменены.
+3. Какие live events уже обновляют admin panel.
+4. Как теперь dispatcher/admin видит online couriers и live order changes.
+5. Что следующим этапом лучше делать:
+   - real map tracking
+   - ETA
+   - App Store polish

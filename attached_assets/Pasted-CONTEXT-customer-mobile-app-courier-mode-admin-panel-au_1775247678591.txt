@@ -1,0 +1,286 @@
+CONTEXT:
+В проекте уже есть:
+- customer mobile app
+- courier mode
+- admin panel
+- auth / roles / realtime
+- pricing engine
+- promo engine
+- refund foundation
+- coupon engine
+- invoice foundation
+- payout foundation
+
+Также в проект загружены внутренние документы AIST:
+1. Технический конспект с тарифами, сервисами, pricing logic, dispatch, SLA и API.
+2. FinOps v2 с OSVČ beta-моделью, Fleet/OSVČ courier logic, Stripe Connect, faktura flow, refund matrix, coupons, payout model, ETA и background jobs.
+
+Эти документы — source of truth. Не придумывай альтернативную финансовую модель, если она уже описана в документах.
+
+CURRENT PRIORITY:
+Нужно реализовать следующий блок:
+REAL FINANCE EXECUTION LAYER
+
+В него входят:
+1. Stripe Connect integration layer
+2. Real payment capture / cancel / refund execution layer
+3. Invoice PDF generation
+4. Email delivery for invoices and key transactional finance emails
+5. Payout execution layer foundation for Fleet and OSVČ couriers
+6. Weekly courier statements / payout summaries
+
+Важно:
+1. Не ломать уже работающие order flows.
+2. Не ломать pricing/promo/coupon/refund foundation.
+3. Не делать полный бухгалтерский ERP.
+4. Не уходить в лишние фичи.
+5. Сделать production-ready execution layer foundation.
+
+TASK OVERVIEW:
+Реализуй 5 основных блока:
+1. Stripe Connect execution layer
+2. Payment lifecycle execution
+3. Invoice PDF generation + storage
+4. Transactional email delivery
+5. Courier payout execution foundation
+
+PART 1 — STRIPE CONNECT EXECUTION LAYER
+Реализуй production-ready integration layer для Stripe / Stripe Connect.
+
+Что нужно:
+1. Подготовить централизованный Stripe service layer.
+2. Поддержать platform account logic для AIST.
+3. Поддержать foundation для courier connected accounts:
+   - Fleet courier
+   - OSVČ courier
+4. Подготовить account linking / onboarding foundation для курьеров.
+5. Не ломать beta phase logic, где часть исполнения может идти как manual/controlled flow.
+6. Если реальные keys/env ещё не даны:
+   - сделай integration-ready code
+   - чётко отдели что работает сразу, а что требует credentials
+
+Нужно поддержать следующие операции:
+1. PaymentIntent create
+2. manual capture
+3. cancel / release hold
+4. partial refund
+5. full refund
+6. transfer / payout execution foundation
+7. webhook handling
+
+PART 2 — PAYMENT LIFECYCLE EXECUTION
+Свяжи Stripe execution с order lifecycle.
+
+Нужно:
+1. При создании заказа поддержать правильный payment intent flow.
+2. При cancel before dispatch:
+   - release hold / cancel payment intent
+3. При delivered:
+   - capture funds
+4. При SLA/refund decision:
+   - создать реальный partial/full refund execution layer
+5. При BFM cancel on video:
+   - capture service fee only
+   - release deposit hold foundation
+6. Не дублировать финансовую логику по случайным местам.
+7. Order должен хранить:
+   - stripe ids
+   - capture/refund state
+   - payment state transitions
+8. Все financial actions должны иметь audit trail.
+
+PART 3 — INVOICE PDF GENERATION
+Реализуй реальную генерацию faktura PDF на основе уже созданной invoice foundation.
+
+Что нужно:
+1. Перевести invoice generation из HTML foundation в реальный PDF workflow.
+2. Использовать production-friendly renderer:
+   - puppeteer
+   - или другой надёжный HTML→PDF renderer
+3. Генерировать PDF для faktura:
+   - AIST OSVČ
+   - neplátce DPH
+   - invoice numbering без пропусков
+4. Сохранять PDF в storage через подготовленный abstraction layer.
+5. В invoice record хранить:
+   - pdf_url
+   - generated_at
+   - delivery status
+6. Не делать из этого идеальную бухгалтерскую типографию, но PDF должен быть usable и real.
+7. Поддержать preview/download flow в admin и customer access layer.
+
+PART 4 — EMAIL DELIVERY
+Реализуй transactional email execution layer.
+
+Нужно:
+1. Подключить email provider abstraction:
+   - SendGrid-ready preferred
+   - или clean provider adapter layer
+2. Реализовать ключевые письма beta-фазы:
+   - order accepted
+   - courier assigned
+   - delivered
+   - invoice ready
+   - refund/coupon issued
+   - weekly courier statement
+3. Не делать email marketing platform.
+4. Только transactional email layer.
+5. Если live credentials ещё нет:
+   - сделать provider-ready integration
+   - чётко отделить, что требует env keys
+6. Логировать email attempts/status.
+
+PART 5 — PAYOUT EXECUTION FOUNDATION
+Реализуй следующий слой payout execution на основе уже готового payout foundation.
+
+Нужно:
+1. Weekly payout summary service уже есть как foundation — теперь доведи до execution-ready flow.
+2. Для Fleet couriers:
+   - payout statement generation
+   - payout export / payable summary
+   - tax withheld placeholder stays
+3. Для OSVČ couriers:
+   - invoice / transfer ready flow
+   - Stripe Connect destination/transfer foundation
+4. Подготовить execution statuses:
+   - pending
+   - approved
+   - transferred
+   - paid_out
+   - failed
+5. Admin panel:
+   - approve payout batch
+   - trigger payout execution foundation
+   - view payout item breakdown
+6. Не делать full payroll/legal engine.
+7. Но сделать так, чтобы можно было реально двигаться к выплатам без рефакторинга.
+
+PART 6 — WEBHOOKS / BACKGROUND JOBS
+Нужно довести execution layer через webhooks/jobs.
+
+Что нужно:
+1. Stripe webhook handling:
+   - payment succeeded
+   - payment canceled
+   - refund created
+   - transfer/payout status updates where relevant
+2. Background jobs:
+   - invoice pdf generation job
+   - invoice email delivery job
+   - payout batch processor
+   - refund execution retry job if needed
+3. Idempotency:
+   - webhook events не должны ломать систему при повторах
+4. Не строить distributed infra overkill.
+5. Сделать стабильный beta-ready execution layer.
+
+PART 7 — ADMIN PANEL EXTENSIONS
+Расширь существующие FinOps разделы admin panel.
+
+Нужно:
+1. Refunds:
+   - real execution status
+   - manual retry / approve where appropriate
+2. Invoices:
+   - generate PDF
+   - preview/download
+   - resend invoice email
+3. Coupons:
+   - no major redesign, only integrate with finance visibility if needed
+4. Payouts:
+   - approve batch
+   - execute batch foundation
+   - see transfer status
+5. Courier finance visibility:
+   - payout summaries
+   - invoice/payment linkage where available
+6. Не перегружать admin UI.
+
+PART 8 — CUSTOMER / COURIER ACCESS
+Добавь минимально нужный доступ в app/API:
+1. Customer:
+   - invoices list
+   - invoice download/open
+   - refund status visibility if relevant
+   - coupon visibility stays
+2. Courier:
+   - weekly earnings / statement foundation
+   - payout summary visibility if уже уместно
+3. Не перегружать mobile app бухгалтерией.
+4. Только useful beta-level access.
+
+PART 9 — AUDIT / SAFETY
+Все financial operations должны иметь traceability.
+
+Нужно:
+1. audit-safe records for:
+   - payment intent created
+   - captured
+   - refunded
+   - coupon issued
+   - invoice generated
+   - payout approved/executed
+2. Защитить всё role-based access.
+3. Не допускать повторного выполнения одной и той же операции без checks.
+4. Все critical actions должны быть idempotent where possible.
+
+WHAT NOT TO DO:
+1. Не ломать текущий pricing engine.
+2. Не ломать realtime tracking.
+3. Не ломать admin dispatch.
+4. Не строить полный accounting/ERP.
+5. Не делать полноценный HR/payroll module.
+6. Не делать email marketing suite.
+7. Не делать giant subscription system.
+8. Не уходить в App Store release work.
+
+ARCHITECTURE REQUIREMENTS:
+1. Stripe logic отдельно от route handlers.
+2. PDF generation отдельно от order routes.
+3. Email delivery отдельно от UI.
+4. Payout execution отдельно от courier UI.
+5. Webhooks должны быть idempotent.
+6. Backend — source of truth.
+7. Подготовить архитектуру так, чтобы следующим этапом можно было:
+   - full live Stripe Connect onboarding
+   - production payout automation
+   - legal export/reporting
+   - VAT transition later if AIST becomes DPH payer
+
+VALIDATION REQUIREMENTS:
+1. Нельзя дважды capture один и тот же заказ.
+2. Нельзя дважды refund без правил и checks.
+3. Нельзя дважды использовать invoice number.
+4. Нельзя дважды выполнить payout item без статусов/checks.
+5. PDF invoices должны реально генерироваться.
+6. Email layer должен иметь лог успешной/неуспешной отправки.
+7. Все critical finance endpoints role-protected.
+
+DELIVERABLES:
+1. Stripe execution layer
+2. Payment lifecycle integration
+3. Real PDF invoice generation
+4. Transactional email layer
+5. Payout execution foundation
+6. Webhook handling
+7. Extended admin FinOps UI
+8. Updated customer/courier finance access where needed
+9. Summary:
+   - какие env/config нужны
+   - какие endpoints/routes добавлены
+   - какие services/jobs добавлены
+   - что реально работает без credentials
+   - что требует live Stripe / SendGrid / storage config
+   - что будет следующим этапом
+
+DEFINITION OF DONE:
+1. Finance execution layer встроен в систему.
+2. PDF invoices реально генерируются.
+3. Refund execution layer готов.
+4. Payout execution foundation готов.
+5. Email delivery foundation готова.
+6. Ничего из core product flows не сломано.
+7. Проект готов к следующему этапу: production credentials wiring + final beta operations + App Store readiness later.
+
+START:
+Сначала реализуй Stripe service layer + invoice PDF generation + email provider abstraction, затем свяжи это с refund/payout execution, затем обнови admin/customer access, и в конце покажи чётко, что работает уже сейчас, а что требует реальные credentials/env.

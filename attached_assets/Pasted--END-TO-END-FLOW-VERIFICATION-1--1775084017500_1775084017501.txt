@@ -1,0 +1,87 @@
+Новая подзадача:
+END-TO-END FLOW VERIFICATION
+
+Что нужно сделать сейчас:
+1. Пройти и проверить реальные ключевые сценарии системы от начала до конца.
+2. Не добавлять новые функции.
+3. Не менять цены.
+4. Не делать App Store preparation.
+5. Только подтвердить, что основные flows реально работают.
+
+Нужно проверить и показать результат по этим сценариям:
+
+SCENARIO 1 — Customer auth + create order
+1. Зарегистрировать / войти как обычный customer.
+2. Создать заказ.
+3. Убедиться, что заказ реально появляется в системе.
+4. Убедиться, что customer tracking screen получает этот order.
+
+SCENARIO 2 — Admin sees new order
+1. Открыть admin panel.
+2. Проверить, что новый заказ виден в dashboard / orders / live dispatch.
+3. Убедиться, что order status корректный.
+
+SCENARIO 3 — Role switch to courier
+1. Взять обычного пользователя.
+2. Через admin panel сменить роль на courier.
+3. Перелогиниться в приложении.
+4. Подтвердить, что открывается courier mode.
+
+SCENARIO 4 — Courier order lifecycle
+1. Courier online.
+2. Courier видит available order.
+3. Courier принимает заказ.
+4. Courier проходит статусы:
+   - accept
+   - arrived
+   - picked up
+   - delivered
+5. Подтвердить, что backend state machine работает корректно.
+
+SCENARIO 5 — Customer live tracking
+1. Проверить, что customer screen обновляется при:
+   - courier assigned
+   - courier arrived
+   - picked up
+   - delivered
+2. Подтвердить, что live tracking / websocket реально работает.
+
+SCENARIO 6 — Admin live dispatch updates
+1. Проверить, что admin panel live dispatch обновляется при:
+   - new order
+   - courier online/offline
+   - order assigned
+   - order delivered
+   - order cancelled
+2. Подтвердить это без ручного refresh.
+
+SCENARIO 7 — Admin cancel
+1. Через admin panel отменить заказ.
+2. Убедиться, что:
+   - backend не падает
+   - customer получает cancelled state
+   - courier получает cancelled state
+   - admin panel обновляется корректно
+
+Что нужно по результату:
+1. Для каждого сценария показать:
+   - работает / не работает
+   - что именно было проверено
+   - если была ошибка — исправить её
+2. Честно разделить:
+   - что реально проверено в Replit environment
+   - что реализовано в коде, но требует physical device / live production credentials
+3. Если найдёшь ещё критические баги — исправить их в рамках этих flow.
+4. Подтвердить, готов ли проект переходить к этапу Pricing + Promo.
+
+Важно:
+1. Не добавлять новые крупные фичи.
+2. Не уходить в рефакторинг без причины.
+3. Не трогать brand update.
+4. Сконцентрироваться только на реальном подтверждении рабочих сценариев.
+
+После завершения покажи:
+1. Результат по каждому из 7 сценариев.
+2. Что было дополнительно исправлено.
+3. Что всё ещё остаётся ограничением среды.
+4. Можно ли безопасно переходить к Pricing + Promo.

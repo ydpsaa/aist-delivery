@@ -1,0 +1,80 @@
+Новая подзадача:
+FULL STABILIZATION + RUNTIME RECOVERY
+
+Что нужно сделать сейчас:
+1. Провести полный аудит текущего состояния проекта.
+2. Найти все критические проблемы, из-за которых:
+   - admin panel не работает корректно
+   - mobile app не может быть нормально проверен
+   - preview/runtime unstable
+3. Починить систему так, чтобы можно было реально тестировать продукт end-to-end.
+
+Что нужно проверить и исправить:
+1. Admin panel:
+   - login
+   - dashboard
+   - users
+   - couriers
+   - orders
+   - live dispatch
+   - data loading
+   - API connection
+   - auth/session
+2. Mobile app:
+   - splash
+   - onboarding
+   - auth
+   - customer home
+   - create order
+   - tracking
+   - courier mode
+   - profile
+   - map/tracking runtime
+3. Backend:
+   - auth endpoints
+   - courier endpoints
+   - customer endpoints
+   - admin endpoints
+   - websocket endpoints
+   - push-related endpoints
+4. Runtime:
+   - env/config issues
+   - API URL issues
+   - preview/runtime problems
+   - SQL/data dependencies
+   - broken mocks vs real data collisions
+5. Role system:
+   - customer
+   - courier
+   - admin
+   - session restore
+   - routing
+6. Realtime:
+   - courier websocket
+   - customer websocket
+   - admin websocket
+   - reconnect
+   - fallback logic
+
+Что нужно сделать по результату:
+1. Дать список всех найденных критических проблем.
+2. Исправить их.
+3. Подтвердить, что system is testable end-to-end.
+4. Если какие-то части всё ещё нельзя полноценно проверить в Replit environment — честно разделить:
+   - что реально работает
+   - что реализовано в коде, но требует physical/device/live environment
+5. Подготовить проект к следующему этапу без добавления новых крупных функций.
+
+Важно:
+1. Сейчас не внедрять цены.
+2. Сейчас не внедрять promo logic.
+3. Сейчас не трогать invoice/Stripe payout logic.
+4. Сейчас не делать App Store packaging.
+5. Сейчас фокус только на stability и recoverability.
+
+После завершения покажи:
+1. Какие критические проблемы были найдены.
+2. Какие были исправлены.
+3. Что теперь реально работает.
+4. Что ещё требует live environment/device testing.
+5. Готов ли проект переходить к этапу Pricing + Promo.

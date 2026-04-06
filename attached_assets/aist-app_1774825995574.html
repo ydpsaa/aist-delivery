@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AIST — Smarter Movement</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --green: #4CAF50;
+  --green-light: #6BCB6F;
+  --green-dark: #388E3C;
+  --green-bg: #F0FAF0;
+  --green-mid: #E8F5E9;
+  --black: #1A1A1A;
+  --gray: #6B7280;
+  --gray2: #9CA3AF;
+  --gray3: #E5E7EB;
+  --gray4: #F9FAFB;
+  --white: #FFFFFF;
+  --red: #EF4444;
+  --amber: #F59E0B;
+  --blue: #3B82F6;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --r: 16px;
+  --r-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #E8EAF0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* PHONE SHELL */
+.phone {
+  width: 390px;
+  height: 844px;
+  background: var(--white);
+  border-radius: 48px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+/* STATUS BAR */
+.status-bar {
+  height: 50px;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  font-size: 15px;
+  font-weight: 600;
+  position: relative;
+  z-index: 10;
+}
+.status-bar.dark { background: var(--black); color: var(--white); }
+.status-bar .time { font-size: 15px; font-weight: 700; }
+.status-bar .icons { display: flex; gap: 6px; align-items: center; }
+.signal { display: flex; gap: 1.5px; align-items: flex-end; }
+.signal span { width: 3px; background: var(--black); border-radius: 1px; }
+.signal span:nth-child(1) { height: 4px; }
+.signal span:nth-child(2) { height: 7px; }
+.signal span:nth-child(3) { height: 10px; }
+.status-bar.dark .signal span { background: white; }
+.battery { width: 22px; height: 11px; border: 1.5px solid currentColor; border-radius: 2px; position: relative; }
+.battery::after { content:''; position:absolute; right:-4px; top:50%; transform:translateY(-50%); width:2px; height:5px; background:currentColor; border-radius:0 1px 1px 0; }
+.battery-fill { height: 100%; width: 70%; background: var(--black); border-radius: 1px; }
+.status-bar.dark .battery-fill { background: white; }
+
+/* SCREENS */
+.screen {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--white);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.screen.active { display: flex; }
+
+/* ---- SPLASH ---- */
+#splash {
+  background: linear-gradient(160deg, #f8fff8 0%, #eaf7ea 100%);
+  align-items: center;
+  justify-content: center;
+}
+.splash-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  animation: splashIn 0.6s ease;
+}
+@keyframes splashIn { from { opacity:0; transform:scale(0.8) } to { opacity:1; transform:scale(1) } }
+.splash-bird {
+  width: 180px;
+  height: 180px;
+  position: relative;
+}
+.bird-svg {
+  width: 100%;
+  height: 100%;
+}
+.splash-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -8px;
+}
+.splash-pin {
+  width: 32px; height: 32px;
+}
+.splash-name {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--black);
+  letter-spacing: -1px;
+}
+.splash-tagline {
+  font-size: 14px;
+  color: var(--gray);
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+.splash-tagline span { color: var(--green); font-weight: 600; }
+.splash-loader {
+  width: 48px;
+  height: 4px;
+  background: var(--gray3);
+  border-radius: 2px;
+  margin-top: 48px;
+  overflow: hidden;
+}
+.splash-loader-fill {
+  height: 100%;
+  width: 0;
+  background: var(--green);
+  border-radius: 2px;
+  animation: loadFill 1.8s ease forwards 0.4s;
+}
+@keyframes loadFill { to { width: 100% } }
+
+/* ---- HOME ---- */
+#home { background: var(--gray4); }
+.home-map {
+  height: 320px;
+  background: #e8f0e8;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.map-bg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+.map-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(76,175,80,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(76,175,80,0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.map-road {
+  position: absolute;
+  background: rgba(255,255,255,0.7);
+  border-radius: 2px;
+}
+.map-road-h { height: 8px; left: 0; right: 0; }
+.map-road-v { width: 8px; top: 0; bottom: 0; }
+.map-route-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.home-top-bar {
+  position: absolute;
+  top: 50px; left: 0; right: 0;
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+}
+.home-logo-pill {
+  background: white;
+  border-radius: 100px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.home-logo-pill svg { width: 20px; height: 20px; }
+.home-logo-pill span { font-size: 16px; font-weight: 800; color: var(--black); }
+.home-avatar {
+  width: 40px; height: 40px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: white;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.home-location-pill {
+  position: absolute;
+  bottom: 16px; left: 16px; right: 16px;
+  background: white;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  z-index: 5;
+}
+.loc-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.loc-text { flex: 1; }
+.loc-label { font-size: 10px; color: var(--gray2); font-weight: 500; }
+.loc-address { font-size: 13px; color: var(--black); font-weight: 600; margin-top: 1px; }
+.loc-arrow { font-size: 16px; color: var(--gray2); }
+
+.home-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* CATEGORIES */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray2);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.cat-item {
+  background: white;
+  border-radius: var(--r-sm);
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cat-item:hover, .cat-item:active { border-color: var(--green); transform: scale(0.97); }
+.cat-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.cat-name { font-size: 11px; font-weight: 600; color: var(--black); text-align: center; line-height: 1.2; }
+.cat-price { font-size: 10px; color: var(--gray); }
+.cat-item.featured { border-color: var(--green); background: var(--green-bg); }
+.cat-item.featured .cat-name { color: var(--green-dark); }
+
+/* PROMO BANNER */
+.promo-banner {
+  background: linear-gradient(135deg, var(--black) 0%, #2d2d2d 100%);
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+.promo-badge {
+  background: var(--green);
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.promo-text { flex: 1; }
+.promo-title { color: white; font-size: 14px; font-weight: 700; line-height: 1.3; }
+.promo-sub { color: rgba(255,255,255,0.6); font-size: 11px; margin-top: 2px; }
+
+/* RECENT ORDERS */
+.recent-order {
+  background: white;
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.ro-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.ro-info { flex: 1; }
+.ro-name { font-size: 13px; font-weight: 600; color: var(--black); }
+.ro-sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+.ro-status { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 100px; }
+.status-delivered { background: var(--green-mid); color: var(--green-dark); }
+.status-pending { background: #FEF3C7; color: #92400E; }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  height: 80px;
+  background: white;
+  border-top: 1px solid var(--gray3);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-bottom: 12px;
+  flex-shrink: 0;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 12px;
+  transition: all 0.1s;
+}
+.nav-item.active .nav-icon { color: var(--green); }
+.nav-item.active .nav-label { color: var(--green); font-weight: 600; }
+.nav-icon { font-size: 22px; color: var(--gray2); transition: color 0.1s; }
+.nav-label { font-size: 10px; color: var(--gray2); font-weight: 500; }
+
+/* ---- ORDER SCREEN ---- */
+#order { background: var(--gray4); }
+.order-header {
+  background: white;
+  padding: 16px 16px 0;
+  border-bottom: 1px solid var(--gray3);
+  flex-shrink: 0;
+}
+.order-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--gray4);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: none;
+}
+.order-title { font-size: 18px; font-weight: 700; color: var(--black); }
+.address-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--gray4);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--gray3);
+}
+.addr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: white;
+  cursor: pointer;
+}
+.addr-row:first-child { border-bottom: 1px solid var(--gray3); }
+.addr-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.addr-dot.pickup { background: var(--green); }
+.addr-dot.dropoff { background: var(--red); }
+.addr-text { flex: 1; }
+.addr-label { font-size: 10px; color: var(--gray2); font-weight: 500; }
+.addr-val { font-size: 14px; color: var(--black); font-weight: 600; margin-top: 1px; }
+.addr-placeholder { color: var(--gray2); font-weight: 400; }
+
+.order-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* SERVICE CARDS */
+.service-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 16px;
+  margin-bottom: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.service-card:hover { border-color: var(--green); }
+.service-card.selected { border-color: var(--green); background: var(--green-bg); }
+.sc-top { display: flex; align-items: flex-start; gap: 12px; }
+.sc-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.sc-info { flex: 1; }
+.sc-name { font-size: 15px; font-weight: 700; color: var(--black); display: flex; align-items: center; gap: 6px; }
+.sc-sub { font-size: 12px; color: var(--gray); margin-top: 3px; line-height: 1.4; }
+.sc-price-block { text-align: right; }
+.sc-price-old { font-size: 11px; color: var(--gray2); text-decoration: line-through; }
+.sc-price { font-size: 20px; font-weight: 800; color: var(--black); }
+.sc-price-sub { font-size: 10px; color: var(--gray); }
+.sc-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+}
+.badge-express { background: #FEE2E2; color: var(--red); }
+.badge-unique { background: var(--green-mid); color: var(--green-dark); }
+.badge-coming { background: var(--gray3); color: var(--gray); }
+.badge-promo { background: #FEF3C7; color: #92400E; }
+.sc-eta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gray3);
+  font-size: 11px;
+  color: var(--gray);
+}
+.sc-eta-pill {
+  background: var(--gray4);
+  padding: 3px 8px;
+  border-radius: 100px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+/* ---- CONFIRM SCREEN ---- */
+#confirm { background: var(--gray4); }
+.confirm-map {
+  height: 200px;
+  background: #e8f0e8;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.confirm-header-overlay {
+  position: absolute;
+  top: 50px; left: 0; right: 0;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 5;
+}
+.confirm-body { flex: 1; overflow-y: auto; padding: 16px; }
+.confirm-card {
+  background: white;
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.confirm-card-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--gray3);
+}
+.cc-icon { font-size: 20px; }
+.cc-title { font-size: 14px; font-weight: 700; color: var(--black); }
+.cc-sub { font-size: 11px; color: var(--gray); margin-top: 1px; }
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray3);
+  font-size: 13px;
+}
+.confirm-row:last-child { border-bottom: none; }
+.confirm-row .cr-label { color: var(--gray); }
+.confirm-row .cr-val { font-weight: 600; color: var(--black); }
+.confirm-row .cr-val.green { color: var(--green-dark); font-weight: 700; }
+.confirm-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--black);
+  border-radius: var(--r);
+  margin-bottom: 12px;
+}
+.ct-label { color: rgba(255,255,255,0.6); font-size: 12px; }
+.ct-price { color: white; font-size: 28px; font-weight: 800; }
+
+.payment-row {
+  background: white;
+  border-radius: var(--r);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.payment-card-icon {
+  width: 44px; height: 28px;
+  background: linear-gradient(135deg, #1A1F71, #2563EB);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: white; font-weight: 700;
+}
+.payment-info { flex: 1; }
+.payment-name { font-size: 13px; font-weight: 600; color: var(--black); }
+.payment-num { font-size: 11px; color: var(--gray); }
+.payment-change { font-size: 12px; color: var(--green); font-weight: 600; }
+
+.sla-guarantee {
+  background: var(--green-mid);
+  border: 1px solid rgba(76,175,80,0.3);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.sla-icon { font-size: 20px; }
+.sla-text { font-size: 11px; color: var(--green-dark); line-height: 1.5; }
+.sla-text strong { font-weight: 700; display: block; }
+
+/* CTA BUTTON */
+.cta-btn {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 18px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.cta-btn:hover { background: var(--green-dark); transform: scale(0.99); }
+.cta-btn:active { transform: scale(0.97); }
+.cta-btn.outline {
+  background: white;
+  color: var(--green-dark);
+  border: 2px solid var(--green);
+}
+.cta-btn-wrap { padding: 0 16px 16px; flex-shrink: 0; }
+
+/* ---- TRACKING SCREEN ---- */
+#tracking { background: var(--gray4); }
+.tracking-map {
+  height: 300px;
+  background: #e8f0e8;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.tracking-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+.courier-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.courier-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+.courier-info { flex: 1; }
+.courier-name { font-size: 16px; font-weight: 700; color: var(--black); }
+.courier-role { font-size: 12px; color: var(--gray); }
+.courier-rating { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--black); }
+.courier-actions { display: flex; gap: 8px; }
+.action-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.action-call { background: var(--green-mid); }
+.action-chat { background: var(--gray4); }
+
+.progress-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.progress-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.progress-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 10px 0;
+  position: relative;
+}
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.step-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+.step-dot.done { background: var(--green); color: white; }
+.step-dot.active { background: var(--green); color: white; box-shadow: 0 0 0 4px rgba(76,175,80,0.2); }
+.step-dot.pending { background: var(--gray3); color: var(--gray2); }
+.step-line {
+  width: 2px;
+  height: 24px;
+  margin: 4px auto 0;
+}
+.step-line.done { background: var(--green); }
+.step-line.pending { background: var(--gray3); }
+.step-content { flex: 1; padding-top: 0; }
+.step-title { font-size: 13px; font-weight: 600; color: var(--black); }
+.step-title.pending { color: var(--gray2); }
+.step-time { font-size: 11px; color: var(--gray); margin-top: 1px; }
+.step-time.eta { color: var(--green); font-weight: 600; }
+
+.order-info-card {
+  background: white;
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.oic-header {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--gray3);
+}
+.oic-id { font-size: 12px; font-weight: 700; color: var(--gray2); }
+.oic-status { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: var(--green-mid); color: var(--green-dark); display: flex; align-items: center; gap: 4px; }
+.oic-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.3 } }
+.oic-route {
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--gray3);
+}
+.oic-addr { flex: 1; }
+.oic-addr-label { font-size: 10px; color: var(--gray2); }
+.oic-addr-val { font-size: 13px; font-weight: 600; color: var(--black); margin-top: 1px; }
+.oic-arrow { font-size: 16px; color: var(--gray2); }
+.oic-stats { display: flex; padding: 12px 16px; gap: 0; }
+.oic-stat { flex: 1; text-align: center; border-right: 1px solid var(--gray3); }
+.oic-stat:last-child { border-right: none; }
+.oic-stat-val { font-size: 15px; font-weight: 700; color: var(--black); }
+.oic-stat-label { font-size: 10px; color: var(--gray2); margin-top: 2px; }
+
+/* ---- TIPS SCREEN ---- */
+#tips-screen {
+  background: white;
+}
+.tips-header {
+  padding: 60px 24px 24px;
+  text-align: center;
+}
+.tips-check {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 16px;
+  animation: bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes bounceIn { from{transform:scale(0.3);opacity:0} to{transform:scale(1);opacity:1} }
+.tips-title { font-size: 24px; font-weight: 800; color: var(--black); margin-bottom: 6px; }
+.tips-sub { font-size: 14px; color: var(--gray); line-height: 1.5; }
+.tips-body { padding: 0 24px; flex: 1; overflow-y: auto; }
+.tips-courier { background: var(--gray4); border-radius: var(--r); padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.tips-courier-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg,var(--green),var(--green-dark)); display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px; }
+.tips-courier-info { flex: 1; }
+.tips-courier-name { font-size: 15px; font-weight: 700; color: var(--black); }
+.tips-courier-stars { color: #F59E0B; font-size: 13px; margin-top: 2px; }
+.tips-label { font-size: 12px; font-weight: 700; color: var(--gray2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.tips-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tip-opt {
+  background: var(--gray4);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.tip-opt:hover { border-color: var(--green); }
+.tip-opt.selected { border-color: var(--green); background: var(--green-bg); }
+.tip-opt.selected .tip-amount { color: var(--green-dark); }
+.tip-amount { font-size: 15px; font-weight: 800; color: var(--black); }
+.tip-unit { font-size: 10px; color: var(--gray); margin-top: 1px; }
+.tip-custom {
+  background: var(--gray4);
+  border: 2px dashed var(--gray3);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--gray);
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.tip-note { font-size: 11px; color: var(--gray2); text-align: center; margin-bottom: 24px; line-height: 1.5; }
+.tip-note span { color: var(--green); font-weight: 600; }
+
+/* PROFILE SCREEN */
+#profile { background: var(--gray4); }
+.profile-header {
+  background: white;
+  padding: 60px 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--gray3);
+}
+.profile-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 800; color: white;
+}
+.profile-name { font-size: 20px; font-weight: 800; color: var(--black); }
+.profile-plan { font-size: 12px; color: var(--gray); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+.plan-badge { background: var(--green-mid); color: var(--green-dark); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+.profile-body { flex: 1; overflow-y: auto; padding: 16px; }
+.menu-section { margin-bottom: 20px; }
+.menu-item {
+  background: white;
+  border-radius: 0;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 1px solid var(--gray3);
+}
+.menu-item:first-child { border-radius: var(--r-sm) var(--r-sm) 0 0; }
+.menu-item:last-child { border-bottom: none; border-radius: 0 0 var(--r-sm) var(--r-sm); }
+.menu-item:hover { background: var(--gray4); }
+.mi-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.mi-text { flex: 1; }
+.mi-title { font-size: 14px; font-weight: 600; color: var(--black); }
+.mi-sub { font-size: 11px; color: var(--gray); margin-top: 1px; }
+.mi-arrow { color: var(--gray2); font-size: 16px; }
+.mi-badge { background: var(--red); color: white; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 100px; }
+
+/* MAP ELEMENTS */
+.map-pin { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.map-pin-bubble { background: var(--green); color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 100px; white-space: nowrap; box-shadow: var(--shadow-sm); }
+.map-pin-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-top: 2px; }
+.map-pin-red .map-pin-bubble { background: var(--red); }
+.map-pin-red .map-pin-dot { background: var(--red); }
+.map-courier-dot {
+  position: absolute;
+  width: 28px; height: 28px;
+  background: var(--green);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  animation: courierPulse 2s infinite;
+}
+@keyframes courierPulse {
+  0%,100%{ box-shadow: 0 0 0 0 rgba(76,175,80,0.4), var(--shadow) }
+  50%{ box-shadow: 0 0 0 8px rgba(76,175,80,0), var(--shadow) }
+}
+
+/* NOTIFICATIONS / TOAST */
+.toast {
+  position: absolute;
+  top: 60px; left: 16px; right: 16px;
+  background: var(--black);
+  color: white;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 100;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-icon { font-size: 20px; }
+.toast-text { flex: 1; }
+
+/* OVERLAY */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 50;
+  display: none;
+  align-items: flex-end;
+}
+.modal-overlay.show { display: flex; }
+.modal-sheet {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  padding: 24px;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform:translateY(100%) } to { transform:translateY(0) } }
+.modal-handle { width: 36px; height: 4px; background: var(--gray3); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 18px; font-weight: 800; color: var(--black); margin-bottom: 16px; }
+
+/* SLIDER ANIMATION */
+.slide-in { animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(30px); opacity:0 } to { transform: translateX(0); opacity:1 } }
+.slide-in-left { animation: slideInLeft 0.3s ease; }
+@keyframes slideInLeft { from { transform: translateX(-30px); opacity:0 } to { transform: translateX(0); opacity:1 } }
+
+/* MEMBERSHIP BANNER */
+.member-banner {
+  background: linear-gradient(135deg, var(--green-dark), var(--green));
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+.member-info { flex: 1; }
+.member-title { color: white; font-size: 15px; font-weight: 700; }
+.member-sub { color: rgba(255,255,255,0.8); font-size: 11px; margin-top: 2px; }
+.member-price { color: white; font-size: 22px; font-weight: 800; }
+.member-period { color: rgba(255,255,255,0.7); font-size: 10px; display: block; }
+
+/* ORDERS LIST */
+#orders { background: var(--gray4); }
+.orders-header { padding: 60px 16px 16px; background: white; border-bottom: 1px solid var(--gray3); }
+.orders-title { font-size: 24px; font-weight: 800; color: var(--black); }
+.orders-body { flex: 1; overflow-y: auto; padding: 16px; }
+.order-card {
+  background: white;
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.oc-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray3); }
+.oc-id { font-size: 12px; font-weight: 700; color: var(--gray2); }
+.oc-date { font-size: 11px; color: var(--gray2); }
+.oc-content { padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+.oc-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.oc-info { flex: 1; }
+.oc-name { font-size: 14px; font-weight: 700; color: var(--black); }
+.oc-route { font-size: 11px; color: var(--gray); margin-top: 2px; }
+.oc-price { font-size: 18px; font-weight: 800; color: var(--black); }
+
+/* MISC */
+.divider { height: 1px; background: var(--gray3); margin: 0 -16px; }
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 100px;
+}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span class="toast-icon">✓</span>
+    <span class="toast-text" id="toast-text">Order placed!</span>
+  </div>
+
+  <!-- STATUS BAR (shared overlay) -->
+
+  <!-- ======== SPLASH ======== -->
+  <div class="screen active" id="splash">
+    <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#f8fff8,#eaf7ea)">
+      <div class="splash-logo">
+        <!-- Bird mascot SVG approximation -->
+        <div style="width:160px;height:160px;position:relative;margin-bottom:8px">
+          <svg viewBox="0 0 160 160" style="width:100%;height:100%">
+            <!-- Body -->
+            <ellipse cx="80" cy="105" rx="38" ry="32" fill="#1a1a1a"/>
+            <!-- Chest white -->
+            <ellipse cx="80" cy="108" rx="22" ry="20" fill="#f0f0f0"/>
+            <!-- Head -->
+            <ellipse cx="80" cy="70" rx="28" ry="26" fill="#f5f5f5"/>
+            <!-- Hat -->
+            <ellipse cx="80" cy="48" rx="30" ry="6" fill="#1a1a1a"/>
+            <rect x="56" y="30" width="48" height="20" rx="4" fill="#1a1a1a"/>
+            <!-- Hat logo -->
+            <circle cx="80" cy="40" r="6" fill="#4CAF50"/>
+            <circle cx="80" cy="40" r="3" fill="white"/>
+            <!-- Eye left -->
+            <circle cx="70" cy="70" r="7" fill="white"/>
+            <circle cx="70" cy="70" r="4" fill="#1a1a1a"/>
+            <circle cx="68" cy="68" r="1.5" fill="white"/>
+            <!-- Eye right -->
+            <circle cx="90" cy="70" r="7" fill="white"/>
+            <circle cx="90" cy="70" r="4" fill="#1a1a1a"/>
+            <circle cx="88" cy="68" r="1.5" fill="white"/>
+            <!-- Beak -->
+            <ellipse cx="80" cy="84" rx="10" ry="5" fill="#d4a843"/>
+            <!-- Wing left -->
+            <ellipse cx="44" cy="110" rx="20" ry="10" fill="#1a1a1a" transform="rotate(-20 44 110)"/>
+            <ellipse cx="40" cy="118" rx="16" ry="6" fill="#4CAF50" transform="rotate(-20 40 118)"/>
+            <!-- Wing right -->
+            <ellipse cx="116" cy="110" rx="20" ry="10" fill="#1a1a1a" transform="rotate(20 116 110)"/>
+            <ellipse cx="120" cy="118" rx="16" ry="6" fill="#4CAF50" transform="rotate(20 120 118)"/>
+            <!-- Feet -->
+            <rect x="68" y="135" width="8" height="12" rx="2" fill="#1a1a1a"/>
+            <rect x="84" y="135" width="8" height="12" rx="2" fill="#1a1a1a"/>
+          </svg>
+        </div>
+        <div class="splash-brand">
+          <svg class="splash-pin" viewBox="0 0 32 32">
+            <path d="M16 2C10.5 2 6 6.5 6 12c0 8 10 18 10 18s10-10 10-18c0-5.5-4.5-10-10-10z" fill="#4CAF50"/>
+            <circle cx="16" cy="12" r="4" fill="white"/>
+          </svg>
+          <span class="splash-name">AIST</span>
+        </div>
+        <div class="splash-tagline">Smarter <span>movement.</span></div>
+        <div style="font-size:12px;color:#9CA3AF;margin-top:6px;">Praha · Czech Republic</div>
+        <div class="splash-loader">
+          <div class="splash-loader-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== HOME ======== -->
+  <div class="screen" id="home">
+    <!-- STATUS BAR -->
+    <div class="status-bar" style="position:absolute;top:0;left:0;right:0;z-index:10;background:transparent">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <div class="signal"><span></span><span></span><span></span></div>
+        <span style="font-size:12px">WiFi</span>
+        <div class="battery"><div class="battery-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="home-map">
+      <div class="map-grid"></div>
+      <!-- Road network -->
+      <div class="map-road map-road-h" style="top:30%"></div>
+      <div class="map-road map-road-h" style="top:55%"></div>
+      <div class="map-road map-road-h" style="top:75%"></div>
+      <div class="map-road map-road-v" style="left:25%"></div>
+      <div class="map-road map-road-v" style="left:55%"></div>
+      <div class="map-road map-road-v" style="left:75%"></div>
+      <!-- Green route line -->
+      <svg class="map-route-svg" viewBox="0 0 390 320">
+        <path d="M80,240 Q140,200 195,160 Q250,120 310,80" stroke="#4CAF50" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-dasharray="8,4"/>
+      </svg>
+      <!-- Pickup pin -->
+      <div class="map-pin" style="left:60px;bottom:80px">
+        <div class="map-pin-bubble">📍 Hurbanova</div>
+        <div class="map-pin-dot"></div>
+      </div>
+      <!-- Dropoff pin -->
+      <div class="map-pin map-pin-red" style="right:70px;top:60px">
+        <div class="map-pin-bubble">🎯 Trešnovky</div>
+        <div class="map-pin-dot"></div>
+      </div>
+      <!-- Courier moving dot -->
+      <div class="map-courier-dot" style="left:180px;top:140px">🐦</div>
+
+      <!-- Top bar -->
+      <div class="home-top-bar">
+        <div class="home-logo-pill">
+          <svg viewBox="0 0 20 20"><path d="M10 1C6.7 1 4 3.7 4 7c0 5 6 12 6 12s6-7 6-12c0-3.3-2.7-6-6-6z" fill="#4CAF50"/><circle cx="10" cy="7" r="2.5" fill="white"/></svg>
+          <span>AIST</span>
+        </div>
+        <div class="home-avatar" onclick="goScreen('profile')">Y</div>
+      </div>
+
+      <!-- Location pill -->
+      <div class="home-location-pill" onclick="goScreen('order')">
+        <div class="loc-dot"></div>
+        <div class="loc-text">
+          <div class="loc-label">WHERE TO?</div>
+          <div class="loc-address">Enter delivery address...</div>
+        </div>
+        <div class="loc-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="home-body">
+      <!-- Promo -->
+      <div class="promo-banner" onclick="goScreen('order')">
+        <div class="promo-badge">−50%</div>
+        <div class="promo-text">
+          <div class="promo-title">First deliveries in Prague!</div>
+          <div class="promo-sub">Use code AIST50 · Limited time</div>
+        </div>
+        <div style="font-size:20px">›</div>
+      </div>
+
+      <!-- Categories -->
+      <div class="section-label">Our services</div>
+      <div class="cat-grid">
+        <div class="cat-item featured" onclick="goOrderWith('flash')">
+          <div class="cat-icon" style="background:#FEE2E2">⚡</div>
+          <div class="cat-name">Flash Express</div>
+          <div class="cat-price">od 229 CZK</div>
+        </div>
+        <div class="cat-item" onclick="goOrderWith('window')">
+          <div class="cat-icon" style="background:#EFF6FF">🕐</div>
+          <div class="cat-name">Window</div>
+          <div class="cat-price">od 89 CZK</div>
+        </div>
+        <div class="cat-item" onclick="goOrderWith('buy')">
+          <div class="cat-icon" style="background:#F0FFF4">🛍️</div>
+          <div class="cat-name">Buy For Me</div>
+          <div class="cat-price">od 279 CZK</div>
+        </div>
+        <div class="cat-item" onclick="goOrderWith('auto')">
+          <div class="cat-icon" style="background:#FFFBEB">🚗</div>
+          <div class="cat-name">Auto přeprava</div>
+          <div class="cat-price">od 299 CZK</div>
+        </div>
+        <div class="cat-item" onclick="goOrderWith('cargo')">
+          <div class="cat-icon" style="background:#EEF2FF">📦</div>
+          <div class="cat-name">Cargo</div>
+          <div class="cat-price">+příplatek</div>
+        </div>
+        <div class="cat-item" style="opacity:0.5">
+          <div class="cat-icon" style="background:#F9FAFB">🍺</div>
+          <div class="cat-name">Řidič</div>
+          <div class="cat-price" style="color:#9CA3AF">soon</div>
+        </div>
+      </div>
+
+      <!-- Recent -->
+      <div class="section-label">Recent orders</div>
+      <div class="recent-order" onclick="goScreen('tracking')">
+        <div class="ro-icon" style="background:#FEE2E2">⚡</div>
+        <div class="ro-info">
+          <div class="ro-name">Flash Express</div>
+          <div class="ro-sub">Hurbanova → U Trešnovky</div>
+        </div>
+        <div class="ro-status status-delivered">Delivered</div>
+      </div>
+      <div class="recent-order">
+        <div class="ro-icon" style="background:#F0FFF4">🛍️</div>
+        <div class="ro-info">
+          <div class="ro-name">Buy For Me — iPhone 16</div>
+          <div class="ro-sub">Apple Store Palladium</div>
+        </div>
+        <div class="ro-status status-pending">Pending</div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('order')">
+        <div class="nav-icon">➕</div>
+        <div class="nav-label">New</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('orders')">
+        <div class="nav-icon">📋</div>
+        <div class="nav-label">Orders</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('profile')">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profile</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== ORDER SCREEN ======== -->
+  <div class="screen" id="order">
+    <div class="status-bar"><span class="time">9:41</span><div class="icons"><div class="signal"><span></span><span></span><span></span></div><div class="battery"><div class="battery-fill"></div></div></div></div>
+
+    <div class="order-header">
+      <div class="order-header-top">
+        <button class="back-btn" onclick="goScreen('home')">←</button>
+        <div class="order-title">New Order</div>
+      </div>
+      <div class="address-inputs">
+        <div class="addr-row">
+          <div class="addr-dot pickup"></div>
+          <div class="addr-text">
+            <div class="addr-label">PICKUP</div>
+            <div class="addr-val">Hurbanova 970/27, Praha 4</div>
+          </div>
+          <div style="font-size:12px;color:#9CA3AF">✎</div>
+        </div>
+        <div class="addr-row">
+          <div class="addr-dot dropoff"></div>
+          <div class="addr-text">
+            <div class="addr-label">DELIVERY</div>
+            <div class="addr-val addr-placeholder" id="delivery-addr">Where to deliver?</div>
+          </div>
+          <div style="font-size:12px;color:#9CA3AF">✎</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-body slide-in">
+      <div class="section-label" style="margin-bottom:12px">Choose service</div>
+
+      <!-- Flash Express -->
+      <div class="service-card selected" id="sc-flash" onclick="selectService('flash')">
+        <div class="sc-top">
+          <div class="sc-icon" style="background:#FEE2E2">⚡</div>
+          <div class="sc-info">
+            <div class="sc-name">Flash Express <span class="sc-badge badge-express">15 min</span></div>
+            <div class="sc-sub">Pick up ASAP · delivered fast · max 15 kg</div>
+          </div>
+          <div class="sc-price-block">
+            <div class="sc-price-old">340 CZK</div>
+            <div class="sc-price">229 CZK</div>
+            <div class="sc-price-sub">Business</div>
+          </div>
+        </div>
+        <div class="sc-eta">
+          <span>Courier arrives in</span>
+          <span class="sc-eta-pill">~12 min</span>
+          <span>·</span>
+          <span class="sc-eta-pill">3.2 km</span>
+          <span style="margin-left:auto;color:#4CAF50;font-weight:700;font-size:12px">✓ SLA</span>
+        </div>
+      </div>
+
+      <!-- Window -->
+      <div class="service-card" id="sc-window" onclick="selectService('window')">
+        <div class="sc-top">
+          <div class="sc-icon" style="background:#EFF6FF">🕐</div>
+          <div class="sc-info">
+            <div class="sc-name">Window Delivery</div>
+            <div class="sc-sub">Choose 3-hour time slot · max 15 kg · 55×45×25 cm</div>
+          </div>
+          <div class="sc-price-block">
+            <div class="sc-price-old">199 CZK</div>
+            <div class="sc-price">89 CZK</div>
+            <div class="sc-price-sub">Business</div>
+          </div>
+        </div>
+        <div class="sc-eta" style="flex-wrap:wrap;gap:4px">
+          <span class="sc-eta-pill">Today 13:00–16:00</span>
+          <span class="sc-eta-pill">Today 18:00–21:00</span>
+          <span class="sc-eta-pill">Tomorrow 10:00–13:00</span>
+        </div>
+      </div>
+
+      <!-- Buy For Me -->
+      <div class="service-card" id="sc-buy" onclick="selectService('buy')">
+        <div class="sc-top">
+          <div class="sc-icon" style="background:#F0FFF4">🛍️</div>
+          <div class="sc-info">
+            <div class="sc-name">Buy For Me <span class="sc-badge badge-unique">Unique</span></div>
+            <div class="sc-sub">Courier shops for you · video before purchase · secure deposit</div>
+          </div>
+          <div class="sc-price-block">
+            <div class="sc-price-old">399 CZK</div>
+            <div class="sc-price">279 CZK</div>
+            <div class="sc-price-sub">+ km + wait</div>
+          </div>
+        </div>
+        <div class="sc-eta">
+          <span>Service fee</span>
+          <span class="sc-eta-pill">279 CZK</span>
+          <span>+ 25 CZK/km</span>
+          <span>+ 100 CZK/15min wait</span>
+        </div>
+      </div>
+
+      <!-- Auto přeprava -->
+      <div class="service-card" id="sc-auto" onclick="selectService('auto')">
+        <div class="sc-top">
+          <div class="sc-icon" style="background:#FFFBEB">🚗</div>
+          <div class="sc-info">
+            <div class="sc-name">Auto přeprava</div>
+            <div class="sc-sub">Your car delivered anywhere in Europe · transparent pricing</div>
+          </div>
+          <div class="sc-price-block">
+            <div class="sc-price-old"></div>
+            <div class="sc-price" style="font-size:16px">299 CZK</div>
+            <div class="sc-price-sub">+ 19 CZK/km</div>
+          </div>
+        </div>
+        <div class="sc-eta">
+          <span>Return driver</span>
+          <span class="sc-eta-pill">+10 CZK/km</span>
+          <span>·</span>
+          <span>Google Tolls API</span>
+        </div>
+      </div>
+
+      <!-- Cargo -->
+      <div class="service-card" id="sc-cargo" onclick="selectService('cargo')">
+        <div class="sc-top">
+          <div class="sc-icon" style="background:#EEF2FF">📦</div>
+          <div class="sc-info">
+            <div class="sc-name">Cargo</div>
+            <div class="sc-sub">Over 15 kg or oversized · surcharge on Window/Flash base</div>
+          </div>
+          <div class="sc-price-block">
+            <div class="sc-price" style="font-size:16px">+120 CZK</div>
+            <div class="sc-price-sub">from 15 kg</div>
+          </div>
+        </div>
+        <div class="sc-eta">
+          <span class="sc-eta-pill">15–30 kg: +120</span>
+          <span class="sc-eta-pill">30–50 kg: +290</span>
+          <span class="sc-eta-pill">50+ kg: from 1200</span>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <div class="cta-btn-wrap">
+      <button class="cta-btn" onclick="goScreen('confirm')">
+        Continue ›
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== CONFIRM ======== -->
+  <div class="screen" id="confirm">
+    <div class="status-bar"><span class="time">9:41</span><div class="icons"><div class="signal"><span></span><span></span><span></span></div><div class="battery"><div class="battery-fill"></div></div></div></div>
+
+    <div class="confirm-map">
+      <div class="map-grid"></div>
+      <div class="map-road map-road-h" style="top:40%"></div>
+      <div class="map-road map-road-h" style="top:65%"></div>
+      <div class="map-road map-road-v" style="left:30%"></div>
+      <div class="map-road map-road-v" style="left:65%"></div>
+      <svg class="map-route-svg" viewBox="0 0 390 200">
+        <path d="M60,160 Q130,120 195,100 Q260,80 330,50" stroke="#4CAF50" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="map-pin" style="left:40px;bottom:30px">
+        <div class="map-pin-bubble">A</div>
+        <div class="map-pin-dot"></div>
+      </div>
+      <div class="map-pin map-pin-red" style="right:50px;top:40px">
+        <div class="map-pin-bubble">B</div>
+        <div class="map-pin-dot"></div>
+      </div>
+      <div class="confirm-header-overlay">
+        <button class="back-btn" onclick="goScreen('order')" style="background:white">←</button>
+        <div style="font-size:16px;font-weight:700;color:#1a1a1a;background:white;padding:8px 16px;border-radius:100px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">Confirm Order</div>
+      </div>
+    </div>
+
+    <div class="confirm-body slide-in">
+      <!-- Order details -->
+      <div class="confirm-card">
+        <div class="confirm-card-header">
+          <span class="cc-icon">⚡</span>
+          <div>
+            <div class="cc-title">Flash Express</div>
+            <div class="cc-sub">Pickup in ~12 min · Delivery ASAP</div>
+          </div>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">From</span>
+          <span class="cr-val">Hurbanova 970/27</span>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">To</span>
+          <span class="cr-val">U Trešnovky 1740</span>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">Distance</span>
+          <span class="cr-val">3.2 km</span>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">Est. time</span>
+          <span class="cr-val">~30 min</span>
+        </div>
+      </div>
+
+      <!-- Price breakdown -->
+      <div class="confirm-card">
+        <div class="confirm-card-header">
+          <span class="cc-icon">🧾</span>
+          <div>
+            <div class="cc-title">Price breakdown</div>
+          </div>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">Base fee (first 4 km)</span>
+          <span class="cr-val">229 CZK</span>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">Extra km (0 km over)</span>
+          <span class="cr-val">0 CZK</span>
+        </div>
+        <div class="confirm-row">
+          <span class="cr-label">Business discount</span>
+          <span class="cr-val green">−111 CZK</span>
+        </div>
+      </div>
+
+      <div class="confirm-total">
+        <div>
+          <div class="ct-label">Total to pay</div>
+          <div style="color:rgba(255,255,255,0.5);font-size:10px">inkl. all fees</div>
+        </div>
+        <div class="ct-price">229 CZK</div>
+      </div>
+
+      <!-- SLA -->
+      <div class="sla-guarantee">
+        <div class="sla-icon">🛡️</div>
+        <div class="sla-text">
+          <strong>SLA Guarantee included</strong>
+          If courier arrives after 15 min → automatic refund of 120 CZK via Stripe
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="payment-row">
+        <div class="payment-card-icon">VISA</div>
+        <div class="payment-info">
+          <div class="payment-name">Visa •••• 4242</div>
+          <div class="payment-num">Default card</div>
+        </div>
+        <div class="payment-change">Change</div>
+      </div>
+
+      <div style="height:8px"></div>
+    </div>
+
+    <div class="cta-btn-wrap">
+      <button class="cta-btn" onclick="placeOrder()">
+        Place Order · 229 CZK
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== TRACKING ======== -->
+  <div class="screen" id="tracking">
+    <div class="status-bar"><span class="time">9:41</span><div class="icons"><div class="signal"><span></span><span></span><span></span></div><div class="battery"><div class="battery-fill"></div></div></div></div>
+
+    <div class="tracking-map">
+      <div class="map-grid"></div>
+      <div class="map-road map-road-h" style="top:35%"></div>
+      <div class="map-road map-road-h" style="top:60%"></div>
+      <div class="map-road map-road-v" style="left:35%"></div>
+      <div class="map-road map-road-v" style="left:70%"></div>
+      <svg class="map-route-svg" viewBox="0 0 390 300">
+        <path d="M70,240 Q140,190 200,150 Q260,110 320,70" stroke="#4CAF50" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="6,4" opacity="0.5"/>
+        <path d="M70,240 Q115,215 155,190" stroke="#4CAF50" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="map-pin" style="left:40px;bottom:50px">
+        <div class="map-pin-bubble">📍 Pickup</div>
+        <div class="map-pin-dot"></div>
+      </div>
+      <div class="map-pin map-pin-red" style="right:60px;top:50px">
+        <div class="map-pin-bubble">🎯 You</div>
+        <div class="map-pin-dot"></div>
+      </div>
+      <div class="map-courier-dot" style="left:145px;top:175px">🐦</div>
+      <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:white;border-radius:100px;padding:6px 16px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.1);white-space:nowrap">
+        Courier is on the way · 1.2 km away
+      </div>
+    </div>
+
+    <div class="tracking-body slide-in">
+      <!-- Order ID + status -->
+      <div class="order-info-card" style="margin-bottom:12px">
+        <div class="oic-header">
+          <span class="oic-id">#AIST-2847</span>
+          <span class="oic-status"><div class="oic-pulse"></div> In Progress</span>
+        </div>
+        <div class="oic-route">
+          <div class="oic-addr">
+            <div class="oic-addr-label">PICKUP</div>
+            <div class="oic-addr-val">Hurbanova 970/27</div>
+          </div>
+          <div class="oic-arrow">→</div>
+          <div class="oic-addr">
+            <div class="oic-addr-label">DELIVERY</div>
+            <div class="oic-addr-val">U Trešnovky 1740</div>
+          </div>
+        </div>
+        <div class="oic-stats">
+          <div class="oic-stat">
+            <div class="oic-stat-val" style="color:#4CAF50">~8 min</div>
+            <div class="oic-stat-label">ETA</div>
+          </div>
+          <div class="oic-stat">
+            <div class="oic-stat-val">3.2 km</div>
+            <div class="oic-stat-label">Distance</div>
+          </div>
+          <div class="oic-stat">
+            <div class="oic-stat-val">229 CZK</div>
+            <div class="oic-stat-label">Total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Courier card -->
+      <div class="courier-card">
+        <div class="courier-avatar">T</div>
+        <div class="courier-info">
+          <div class="courier-name">Tomáš N.</div>
+          <div class="courier-role">Flash Express Courier</div>
+          <div class="courier-rating">⭐ 4.9 · 1,247 deliveries</div>
+        </div>
+        <div class="courier-actions">
+          <button class="action-btn action-call">📞</button>
+          <button class="action-btn action-chat">💬</button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-card">
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">Delivery progress</div>
+        <div class="progress-steps">
+          <div class="progress-step">
+            <div class="step-indicator">
+              <div class="step-dot done">✓</div>
+              <div class="step-line done"></div>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Order confirmed</div>
+              <div class="step-time">9:41 · Payment processed</div>
+            </div>
+          </div>
+          <div class="progress-step">
+            <div class="step-indicator">
+              <div class="step-dot active">→</div>
+              <div class="step-line pending"></div>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Courier heading to pickup</div>
+              <div class="step-time eta">ETA 9:48 · 1.2 km away</div>
+            </div>
+          </div>
+          <div class="progress-step">
+            <div class="step-indicator">
+              <div class="step-dot pending">3</div>
+              <div class="step-line pending"></div>
+            </div>
+            <div class="step-content">
+              <div class="step-title" class="pending">Package picked up</div>
+              <div class="step-time">Waiting</div>
+            </div>
+          </div>
+          <div class="progress-step">
+            <div class="step-indicator">
+              <div class="step-dot pending">4</div>
+            </div>
+            <div class="step-content">
+              <div class="step-title" class="pending">Delivered!</div>
+              <div class="step-time">Then: tips screen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="cta-btn outline" onclick="goScreen('tips-screen')" style="margin-bottom:16px">
+        Simulate: Order Delivered ›
+      </button>
+
+      <button class="cta-btn" onclick="goScreen('home')" style="background:var(--gray4);color:var(--black)">
+        ← Back to Home
+      </button>
+
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- ======== TIPS SCREEN ======== -->
+  <div class="screen" id="tips-screen">
+    <div class="status-bar"><span class="time">9:52</span><div class="icons"><div class="signal"><span></span><span></span><span></span></div><div class="battery"><div class="battery-fill"></div></div></div></div>
+
+    <div class="tips-header">
+      <div class="tips-check">✓</div>
+      <div class="tips-title">Delivered!</div>
+      <div class="tips-sub">Your package arrived at U Trešnovky 1740.<br>229 CZK charged to Visa ••42</div>
+    </div>
+
+    <div class="tips-body">
+      <div class="tips-courier">
+        <div class="tips-courier-avatar">T</div>
+        <div class="tips-courier-info">
+          <div class="tips-courier-name">Tomáš N. delivered your order</div>
+          <div class="tips-courier-stars">★ ★ ★ ★ ★ &nbsp;4.9</div>
+        </div>
+      </div>
+
+      <div class="tips-label">Leave a tip for the courier</div>
+      <div class="tips-options">
+        <div class="tip-opt" onclick="selectTip(this)">
+          <div class="tip-amount">0</div>
+          <div class="tip-unit">No tip</div>
+        </div>
+        <div class="tip-opt" onclick="selectTip(this)">
+          <div class="tip-amount">50</div>
+          <div class="tip-unit">CZK</div>
+        </div>
+        <div class="tip-opt selected" onclick="selectTip(this)">
+          <div class="tip-amount">100</div>
+          <div class="tip-unit">CZK</div>
+        </div>
+        <div class="tip-opt" onclick="selectTip(this)">
+          <div class="tip-amount">200</div>
+          <div class="tip-unit">CZK</div>
+        </div>
+      </div>
+      <div class="tip-custom">✏️ Enter custom amount</div>
+      <div class="tip-note">100% of the tip goes to your courier.<br><span>AIST takes 0% commission on tips.</span></div>
+
+      <!-- Rating -->
+      <div class="tips-label">Rate this delivery</div>
+      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px" id="stars">
+        <span style="font-size:32px;cursor:pointer" onclick="rateStar(this,1)">⭐</span>
+        <span style="font-size:32px;cursor:pointer" onclick="rateStar(this,2)">⭐</span>
+        <span style="font-size:32px;cursor:pointer" onclick="rateStar(this,3)">⭐</span>
+        <span style="font-size:32px;cursor:pointer" onclick="rateStar(this,4)">⭐</span>
+        <span style="font-size:32px;cursor:pointer;filter:grayscale(1)" onclick="rateStar(this,5)">⭐</span>
+      </div>
+    </div>
+
+    <div class="cta-btn-wrap" style="display:flex;flex-direction:column;gap:8px">
+      <button class="cta-btn" onclick="sendTip()">Send Tip · 100 CZK</button>
+      <button class="cta-btn" style="background:var(--gray4);color:var(--black)" onclick="goScreen('home')">Skip · Done</button>
+    </div>
+  </div>
+
+  <!-- ======== ORDERS LIST ======== -->
+  <div class="screen" id="orders">
+    <div class="status-bar"><span class="time">9:41</span><div class="icons"><div class="signal"><span></span><span></span><span></span></div><div class="battery"><div class="battery-fill"></div></div></div></div>
+
+    <div class="orders-header">
+      <div class="orders-title">My Orders</div>
+    </div>
+
+    <div class="orders-body">
+      <div class="order-card" onclick="goScreen('tracking')">
+        <div class="oc-header">
+          <span class="oc-id">#AIST-2847</span>
+          <span class="oc-date">Today · 9:41</span>
+        </div>
+        <div class="oc-content">
+          <div class="oc-icon" style="background:#FEE2E2">⚡</div>
+          <div class="oc-info">
+            <div class="oc-name">Flash Express</div>
+            <div class="oc-route">Hurbanova → U Trešnovky</div>
+            <div style="margin-top:4px"><span class="tag" style="background:var(--green-mid);color:var(--green-dark);font-size:11px;font-weight:700">🟢 In Progress</span></div>
+          </div>
+          <div class="oc-price">229 CZK</div>
+        </div>
+      </div>
+
+      <div class="order-card">
+        <div class="oc-header">
+          <span class="oc-id">#AIST-2840</span>
+          <span class="oc-date">Yesterday · 14:22</span>
+        </div>
+        <div class="oc-content">
+          <div class="oc-icon" style="background:#F0FFF4">🛍️</div>
+          <div class="oc-info">
+            <div class="oc-name">Buy For Me</div>
+            <div class="oc-route">Apple Store Palladium</div>
+            <div style="margin-top:4px"><span class="tag" style="background:var(--gray3);color:var(--gray);font-size:11px;font-weight:700">✓ Delivered</span></div>
+          </div>
+          <div class="oc-price">604 CZK</div>
+        </div>
+      </div>
+
+      <div class="order-card">
+        <div class="oc-header">
+          <span class="oc-id">#AIST-2831</span>
+          <span class="oc-date">25 Mar · 10:15</span>
+        </div>
+        <div class="oc-content">
+          <div class="oc-icon" style="background:#EFF6FF">🕐</div>
+          <div class="oc-info">
+            <div class="oc-name">Window Delivery</div>
+            <div class="oc-route">Náměstí Míru → Žižkov</div>
+            <div style="margin-top:4px"><span class="tag" style="background:var(--gray3);color:var(--gray);font-size:11px;font-weight:700">✓ Delivered</span></div>
+          </div>
+          <div class="oc-price">89 CZK</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('order')">
+        <div class="nav-icon">➕</div>
+        <div class="nav-label">New</div>
+      </div>
+      <div class="nav-item active">
+        <div class="nav-icon">📋</div>
+        <div class="nav-label">Orders</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('profile')">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profile</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== PROFILE ======== -->
+  <div class="screen" id="profile">
+    <div class="status-bar"><span class="time">9:41</span><div class="icons"><div class="signal"><span></span><span></span><span></span></div><div class="battery"><div class="battery-fill"></div></div></div></div>
+
+    <div class="profile-header">
+      <div class="profile-avatar">Y</div>
+      <div>
+        <div class="profile-name">Yura</div>
+        <div class="profile-plan">
+          <span class="plan-badge">★ Business</span>
+          <span>990 CZK/měs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <!-- Membership card -->
+      <div class="member-banner" style="margin-bottom:16px">
+        <div style="font-size:28px">⭐</div>
+        <div class="member-info">
+          <div class="member-title">Business Membership</div>
+          <div class="member-sub">Window 89 CZK · Flash 229 CZK · Priority dispatch</div>
+        </div>
+        <div>
+          <div class="member-price">990</div>
+          <span class="member-period">CZK/měs</span>
+        </div>
+      </div>
+
+      <div class="section-label">Account</div>
+      <div class="menu-section">
+        <div style="border-radius:var(--r-sm);overflow:hidden;box-shadow:var(--shadow-sm)">
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#EFF6FF">💳</div>
+            <div class="mi-text">
+              <div class="mi-title">Payment methods</div>
+              <div class="mi-sub">Visa ••42 · Add card</div>
+            </div>
+            <div class="mi-arrow">›</div>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#F0FFF4">📦</div>
+            <div class="mi-text">
+              <div class="mi-title">My addresses</div>
+              <div class="mi-sub">3 saved addresses</div>
+            </div>
+            <div class="mi-arrow">›</div>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#FFFBEB">🧾</div>
+            <div class="mi-text">
+              <div class="mi-title">Invoices & receipts</div>
+              <div class="mi-sub">Monthly PDF · Business plan</div>
+            </div>
+            <div class="mi-arrow">›</div>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#FEF2F2">🎁</div>
+            <div class="mi-text">
+              <div class="mi-title">Referral & promo</div>
+              <div class="mi-sub">AIST50 · Invite friends</div>
+            </div>
+            <div>
+              <span class="mi-badge">−50%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Statistics</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+        <div style="background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:24px;font-weight:800;color:var(--black)">23</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">Orders this month</div>
+        </div>
+        <div style="background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:24px;font-weight:800;color:var(--green-dark)">−1 380</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">Saved vs no plan</div>
+        </div>
+        <div style="background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:24px;font-weight:800;color:var(--black)">4.9 ★</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">Your avg rating</div>
+        </div>
+        <div style="background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:24px;font-weight:800;color:var(--black)">550</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">Tips given (CZK)</div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('order')">
+        <div class="nav-icon">➕</div>
+        <div class="nav-label">New</div>
+      </div>
+      <div class="nav-item" onclick="goScreen('orders')">
+        <div class="nav-icon">📋</div>
+        <div class="nav-label">Orders</div>
+      </div>
+      <div class="nav-item active">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profile</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- OUTSIDE: Navigation hint -->
+<div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:white;padding:8px 16px;border-radius:100px;font-size:12px;font-family:Inter,sans-serif;pointer-events:none;white-space:nowrap">
+  AIST App Demo · Click to navigate
+</div>
+
+<script>
+// INIT
+setTimeout(() => {
+  goScreen('home');
+}, 2200);
+
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+}
+
+function goOrderWith(type) {
+  goScreen('order');
+  setTimeout(() => selectService(type), 100);
+}
+
+function selectService(type) {
+  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('sc-' + type);
+  if (card) {
+    card.classList.add('selected');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  // Update delivery address hint
+  if (type === 'buy') {
+    document.getElementById('delivery-addr').textContent = 'Which store?';
+    document.getElementById('delivery-addr').classList.add('addr-placeholder');
+  } else if (type === 'auto') {
+    document.getElementById('delivery-addr').textContent = 'Destination city/country';
+    document.getElementById('delivery-addr').classList.add('addr-placeholder');
+  } else {
+    document.getElementById('delivery-addr').textContent = 'U Trešnovky 1740, Praha';
+    document.getElementById('delivery-addr').classList.remove('addr-placeholder');
+  }
+}
+
+function placeOrder() {
+  showToast('✓ Order placed! Finding courier...');
+  setTimeout(() => goScreen('tracking'), 800);
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+let selectedTip = 100;
+function selectTip(el) {
+  document.querySelectorAll('.tip-opt').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTip = parseInt(el.querySelector('.tip-amount').textContent) || 0;
+  const btn = document.querySelector('#tips-screen .cta-btn');
+  if (btn) {
+    btn.textContent = selectedTip > 0 ? `Send Tip · ${selectedTip} CZK` : 'Done without tip';
+  }
+}
+
+function sendTip() {
+  if (selectedTip > 0) {
+    showToast(`★ ${selectedTip} CZK sent to Tomáš. Thank you!`);
+  }
+  setTimeout(() => goScreen('home'), 800);
+}
+
+function rateStar(el, num) {
+  const stars = document.querySelectorAll('#stars span');
+  stars.forEach((s, i) => {
+    s.style.filter = i < num ? '' : 'grayscale(1)';
+  });
+}
+</script>
+</body>
+</html>

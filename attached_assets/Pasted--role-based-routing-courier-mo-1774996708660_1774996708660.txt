@@ -1,0 +1,77 @@
+Отлично. Теперь переходим к следующей подзадаче: реализовать role-based routing и базовый courier mode внутри того же приложения, не ломая текущий customer flow.
+
+Что нужно сделать сейчас:
+1. Реализовать role-based routing на основе user.role:
+   - customer
+   - courier
+2. Оставить текущий customer flow без изменений.
+3. Добавить отдельный courier mode внутри того же приложения.
+4. Сделать так, чтобы все новые пользователи по умолчанию оставались customer.
+5. Подготовить логику, при которой роль courier назначается только через backend/admin.
+6. После смены роли на courier пользователь при следующем входе или restore session должен попадать уже в courier interface.
+7. Не делать отдельное приложение для курьера.
+8. Не трогать пока admin UI в мобильном приложении.
+
+Что должно появиться в courier mode:
+1. Courier Home screen.
+2. Статус работы:
+   - Online
+   - Offline
+3. Блок “Available orders”.
+4. Блок “Current order”.
+5. Блок “Today earnings” как placeholder.
+6. Блок “Courier profile”.
+7. Простой экран деталей заказа для курьера.
+8. Кнопки:
+   - Accept order
+   - Decline order
+   - Arrived
+   - Picked up
+   - Delivered
+
+Важно:
+1. Пока не подключать реальную dispatch-логику.
+2. Пока не подключать реальные push notifications.
+3. Пока не делать сложную геолокацию.
+4. Пока не делать автоматическое назначение заказов.
+5. Пока использовать mock courier orders / mock courier state, но архитектуру готовить под реальный backend.
+
+Backend / data requirements:
+1. Убедиться, что user.role реально приходит с backend и используется в приложении.
+2. Добавить courier-specific fields в структуру пользователя или отдельную courier profile модель, если это нужно для масштабирования.
+3. Подготовить место для:
+   - vehicle type
+   - vehicle plate
+   - courier status
+   - courier activity
+4. Но редактирование этих данных пока не делать в приложении.
+
+Navigation requirements:
+1. Если role = customer → открывать текущие main tabs.
+2. Если role = courier → открывать courier tabs / courier stack.
+3. Если role меняется на backend, приложение должно корректно подхватывать новую роль после relogin или session restore.
+4. Не ломать welcome/auth flow.
+
+UI requirements:
+1. Courier mode должен быть визуально в стиле AIST.
+2. Тот же premium clean стиль.
+3. Не делать перегруженный интерфейс.
+4. Customer и courier UI должны явно отличаться по структуре, но быть в одном визуальном языке.
+
+Технически:
+1. Сделай clean architecture.
+2. Не рефакторь лишнего.
+3. Не ломай email auth.
+4. Не трогай delivery screens customer mode, кроме route separation.
+5. Подготовь проект так, чтобы следующим этапом можно было подключить:
+   - real courier orders from backend
+   - push notifications
+   - online/offline sync
+   - admin role switching
+
+После завершения покажи:
+- какие файлы были добавлены / изменены,
+- как теперь устроен routing по ролям,
+- какие courier screens уже есть,
+- как сейчас работает переключение customer/courier,
+- что будет следующим шагом для реальной courier логики.
